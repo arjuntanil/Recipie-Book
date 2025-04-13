@@ -1,0 +1,118 @@
+[
+  {
+    "model": "recipes.recipe",
+    "pk": 1,
+    "fields": {
+      "name": "Classic Chocolate Chip Cookies",
+      "description": "Delicious homemade chocolate chip cookies that are soft in the middle and crispy on the edges.",
+      "preparation_steps": "1. Preheat oven to 375°F (190°C).\n2. In a large bowl, cream together butter, white sugar, and brown sugar until smooth.\n3. Beat in eggs one at a time, then stir in vanilla.\n4. Dissolve baking soda in hot water. Add to batter along with salt.\n5. Stir in flour and chocolate chips.\n6. Drop by large spoonfuls onto ungreased pans.\n7. Bake for about 10 minutes or until edges are nicely browned.",
+      "preparation_time": 15,
+      "cooking_time": 10,
+      "difficulty": "easy",
+      "category": "dessert",
+      "servings": 24,
+      "created_at": "2023-04-12T10:00:00Z",
+      "updated_at": "2023-04-12T10:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 1,
+    "fields": {
+      "recipe": 1,
+      "name": "butter",
+      "quantity": "1",
+      "unit": "cup"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 2,
+    "fields": {
+      "recipe": 1,
+      "name": "white sugar",
+      "quantity": "1",
+      "unit": "cup"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 3,
+    "fields": {
+      "recipe": 1,
+      "name": "brown sugar",
+      "quantity": "1",
+      "unit": "cup"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 4,
+    "fields": {
+      "recipe": 1,
+      "name": "eggs",
+      "quantity": "2",
+      "unit": ""
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 5,
+    "fields": {
+      "recipe": 1,
+      "name": "vanilla extract",
+      "quantity": "2",
+      "unit": "tsp"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 6,
+    "fields": {
+      "recipe": 1,
+      "name": "baking soda",
+      "quantity": "1",
+      "unit": "tsp"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 7,
+    "fields": {
+      "recipe": 1,
+      "name": "hot water",
+      "quantity": "2",
+      "unit": "tsp"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 8,
+    "fields": {
+      "recipe": 1,
+      "name": "salt",
+      "quantity": "0.5",
+      "unit": "tsp"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 9,
+    "fields": {
+      "recipe": 1,
+      "name": "all-purpose flour",
+      "quantity": "3",
+      "unit": "cups"
+    }
+  },
+  {
+    "model": "recipes.ingredient",
+    "pk": 10,
+    "fields": {
+      "recipe": 1,
+      "name": "chocolate chips",
+      "quantity": "2",
+      "unit": "cups"
+    }
+  }
+] 

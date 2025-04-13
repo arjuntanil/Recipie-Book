@@ -1,0 +1,670 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Page header styles */
+    .page-header {
+        color: white;
+        padding: 80px 0;
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+        height: 400px;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(10, 29, 55, 0.85) 0%, rgba(0, 0, 0, 0.7) 100%);
+        z-index: 2;
+    }
+    
+    .header-carousel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+    
+    .carousel-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
+        transform: scale(1.05);
+    }
+    
+    .carousel-slide.active {
+        opacity: 1;
+        z-index: 1;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 3;
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .page-title {
+        font-size: 4.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 2;
+        color: white;
+        font-family: 'Playfair Display', serif;
+        animation: fadeInDown 1.2s ease-out, glowText 3s ease-in-out infinite alternate;
+        text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.7);
+        letter-spacing: 1px;
+    }
+    
+    @keyframes glowText {
+        0% {
+            text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.7);
+        }
+        100% {
+            text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.9), 0 0 30px rgba(197, 157, 95, 0.4);
+        }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .page-subtitle {
+        font-size: 1.4rem;
+        opacity: 0.95;
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+        font-weight: 300;
+        animation: fadeInUp 1.2s ease-out 0.3s both;
+        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.9);
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .header-decoration {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(197, 157, 95, 0.2) 0%, rgba(197, 157, 95, 0) 70%);
+        z-index: 1;
+        animation: pulse 6s infinite ease-in-out;
+    }
+    
+    .decoration-1 {
+        top: -50px;
+        left: 10%;
+        animation-delay: 0s;
+    }
+    
+    .decoration-2 {
+        bottom: -100px;
+        right: 15%;
+        width: 300px;
+        height: 300px;
+        animation-delay: 2s;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+        50% {
+            transform: scale(1.5);
+            opacity: 0.2;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+    }
+    
+    @keyframes kenburns {
+        0% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1.15);
+        }
+    }
+    
+    /* Filter card styles */
+    .filter-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        margin-top: -60px;
+        background-color: white;
+        overflow: hidden;
+        position: relative;
+        z-index: 4;
+    }
+    
+    .filter-header {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .filter-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #0A1D37;
+    }
+    
+    .filter-body {
+        padding: 20px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    
+    .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+    }
+    
+    .btn-filter {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Recipe grid styles */
+    .recipe-grid {
+        margin-bottom: 60px;
+    }
+    
+    .recipe-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        position: relative;
+        background-color: white;
+        height: 100%;
+    }
+    
+    .recipe-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .recipe-img-container {
+        height: 240px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .recipe-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .recipe-card:hover .recipe-img {
+        transform: scale(1.1);
+    }
+    
+    .recipe-category-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background-color: #C59D5F;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 20px;
+        letter-spacing: 0.5px;
+        z-index: 2;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .recipe-views {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 0.75rem;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        z-index: 2;
+    }
+    
+    .recipe-body {
+        padding: 25px;
+    }
+    
+    .recipe-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #0A1D37;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+    
+    .recipe-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .recipe-title a:hover {
+        color: #C59D5F;
+    }
+    
+    .recipe-meta {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+        color: #666;
+        font-size: 0.85rem;
+    }
+    
+    .recipe-meta-item {
+        display: flex;
+        align-items: center;
+        margin-right: 15px;
+        margin-bottom: 5px;
+    }
+    
+    .recipe-meta-item i {
+        color: #C59D5F;
+        margin-right: 5px;
+    }
+    
+    .recipe-description {
+        color: #666;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .recipe-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 15px;
+        margin-top: auto;
+    }
+    
+    .recipe-author {
+        display: flex;
+        align-items: center;
+    }
+    
+    .author-img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .author-placeholder {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+    }
+    
+    .author-name {
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .btn-view-recipe {
+        border: none;
+        background-color: #0A1D37;
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view-recipe:hover {
+        background-color: #C59D5F;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Pagination styles */
+    .custom-pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .page-link {
+        border: none;
+        font-weight: 600;
+        color: #0A1D37;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .page-link:hover {
+        background-color: #f0f0f0;
+        color: #C59D5F;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #C59D5F;
+        color: white;
+    }
+    
+    .page-item.disabled .page-link {
+        color: #ccc;
+    }
+    
+    /* Add Recipe Button */
+    .btn-add-recipe {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #C59D5F;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 100;
+    }
+    
+    .btn-add-recipe:hover {
+        transform: translateY(-5px) rotate(90deg);
+        background-color: #0A1D37;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800&display=swap">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header with Carousel -->
+<header class="page-header">
+    <div class="header-carousel">
+        <div class="carousel-slide active" style="background-image: url('https://images.unsplash.com/photo-1631452180519-c014fe946bc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920');"></div>
+        <div class="carousel-slide" style="background-image: url('https://images.unsplash.com/photo-1589647363585-f4a7d3877b10?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920');"></div>
+        <div class="carousel-slide" style="background-image: url('https://images.unsplash.com/photo-1574484284002-952d92456975?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920');"></div>
+        <div class="carousel-slide" style="background-image: url('https://images.unsplash.com/photo-1546833998-877b37c2e5c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920');"></div>
+        <div class="carousel-slide" style="background-image: url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920');"></div>
+    </div>
+    <div class="header-decoration decoration-1"></div>
+    <div class="header-decoration decoration-2"></div>
+    <div class="container header-content">
+        <h1 class="page-title">Explore Our Recipes</h1>
+        <p class="page-subtitle">Discover a world of culinary delights with our handpicked collection of recipes for every occasion and taste preference.</p>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Filters -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h5 class="filter-title">
+                <i class="fas fa-sliders-h me-2"></i> Filter Recipes
+            </h5>
+        </div>
+        <div class="filter-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="category" class="form-label">Category</label>
+                    <select name="category" id="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.0 }}" {% if current_category == category.0 %}selected{% endif %}>
+                            {{ category.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="difficulty" class="form-label">Difficulty</label>
+                    <select name="difficulty" id="difficulty" class="form-select">
+                        <option value="">All Levels</option>
+                        {% for difficulty in difficulties %}
+                        <option value="{{ difficulty.0 }}" {% if request.GET.difficulty == difficulty.0 %}selected{% endif %}>
+                            {{ difficulty.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-filter me-2">
+                        <i class="fas fa-filter me-2"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'recipe-list' %}" class="btn btn-outline-secondary btn-filter">
+                        <i class="fas fa-redo-alt me-2"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recipe Grid -->
+    <div class="recipe-grid">
+        <div class="row">
+            {% for recipe in object_list %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="recipe-card h-100">
+                    <div class="recipe-img-container">
+                        {% if recipe.images.first %}
+                        <img src="{{ recipe.images.first.image.url }}" class="recipe-img" alt="{{ recipe.name }}">
+                        {% else %}
+                        <img src="https://via.placeholder.com/600x400?text=No+Image" class="recipe-img" alt="No Image">
+                        {% endif %}
+                        <div class="recipe-category-badge">{{ recipe.get_category_display }}</div>
+                        <div class="recipe-views">
+                            <i class="fas fa-eye"></i> {{ recipe.view_count }}
+                        </div>
+                    </div>
+                    <div class="recipe-body">
+                        <h3 class="recipe-title">
+                            <a href="{% url 'recipe-detail' recipe.pk %}">{{ recipe.name }}</a>
+                        </h3>
+                        <div class="recipe-meta">
+                            <div class="recipe-meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ recipe.total_time }} mins</span>
+                            </div>
+                            <div class="recipe-meta-item">
+                                <i class="fas fa-utensils"></i>
+                                <span>{{ recipe.get_difficulty_display }}</span>
+                            </div>
+                            <div class="recipe-meta-item">
+                                <i class="fas fa-users"></i>
+                                <span>{{ recipe.servings }} servings</span>
+                            </div>
+                        </div>
+                        <p class="recipe-description">{{ recipe.description|truncatechars:120 }}</p>
+                        <div class="recipe-footer">
+                            <div class="recipe-author">
+                                {% if recipe.user.profile.profile_picture %}
+                                <img src="{{ recipe.user.profile.profile_picture.url }}" class="author-img" alt="{{ recipe.user.username }}">
+                                {% else %}
+                                <div class="author-placeholder">
+                                    <i class="fas fa-user fa-sm"></i>
+                                </div>
+                                {% endif %}
+                                <span class="author-name">{{ recipe.user.username }}</span>
+                            </div>
+                            <a href="{% url 'recipe-detail' recipe.pk %}" class="btn btn-view-recipe">
+                                View Recipe
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="d-flex flex-column align-items-center">
+                    <i class="fas fa-utensils fa-5x mb-4 text-muted"></i>
+                    <h3 class="mb-3">No recipes found</h3>
+                    <p class="text-muted">Try adjusting your filters or create a new recipe.</p>
+                    <a href="{% url 'recipe-create' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus me-2"></i> Add Your First Recipe
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination custom-pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="First">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="Previous">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-left"></i></span>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="Next">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="Last">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-right"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Floating Add Recipe Button -->
+{% if user.is_authenticated %}
+<a href="{% url 'recipe-create' %}" class="btn-add-recipe" title="Add New Recipe">
+    <i class="fas fa-plus"></i>
+</a>
+{% endif %}
+
+<script>
+    // Background carousel for header
+    document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        let currentSlide = 0;
+        
+        function nextSlide() {
+            // Remove active class from current slide
+            slides[currentSlide].classList.remove('active');
+            
+            // Calculate next slide index
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            // Add active class to next slide
+            slides[currentSlide].classList.add('active');
+        }
+        
+        // Set interval for automatic sliding (7 seconds)
+        setInterval(nextSlide, 7000);
+    });
+</script>
+{% endblock %} 

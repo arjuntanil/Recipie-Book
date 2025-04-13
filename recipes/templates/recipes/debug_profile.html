@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>Debug Profile Image</h3>
+                </div>
+                <div class="card-body">
+                    <h5>User: {{ user.username }}</h5>
+                    <p>Profile picture field: {{ user.profile.profile_picture }}</p>
+                    <p>Profile picture URL: 
+                        {% if user.profile.profile_picture %}
+                            {{ user.profile.profile_picture.url }}
+                        {% else %}
+                            No URL available
+                        {% endif %}
+                    </p>
+                    
+                    <div class="mt-4">
+                        <h5>Profile Picture Test:</h5>
+                        <div style="width: 150px; height: 150px; border: 2px solid #ddd; margin: 0 auto; overflow: hidden; border-radius: 50%;">
+                            {% if user.profile.profile_picture %}
+                                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                    <i class="fas fa-user fa-4x text-secondary"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Media Settings:</h5>
+                        <p>MEDIA_URL: {{ MEDIA_URL }}</p>
+                        <p>MEDIA_ROOT: {{ MEDIA_ROOT }}</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'profile-edit' %}" class="btn btn-primary">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

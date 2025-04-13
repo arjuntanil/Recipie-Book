@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Recipe Book{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Search Results</h1>
+        {% if query %}
+            <p class="lead">Showing results for: <strong>{{ query }}</strong></p>
+        {% else %}
+            <p class="lead">Showing all recipes</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    {% if recipes %}
+        {% for recipe in recipes %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% with image=recipe.images.filter.first %}
+                        {% if image %}
+                            <img src="{{ image.image.url }}" class="card-img-top" alt="{{ recipe.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" alt="No Image">
+                        {% endif %}
+                    {% endwith %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ recipe.name }}</h5>
+                        <p class="card-text">{{ recipe.description|truncatechars:100 }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="far fa-clock"></i> Prep: {{ recipe.preparation_time }} min | 
+                                <i class="fas fa-fire"></i> Cook: {{ recipe.cooking_time }} min
+                            </small>
+                        </div>
+                        <a href="{% url 'recipe-detail' recipe.pk %}" class="btn btn-outline-primary mt-2 w-100">View Recipe</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                {% if query %}
+                    No recipes found matching "<strong>{{ query }}</strong>". <a href="{% url 'recipe-list' %}">View all recipes</a> or <a href="{% url 'recipe-create' %}">add a new recipe</a>.
+                {% else %}
+                    No recipes found. <a href="{% url 'recipe-create' %}">Add your first recipe</a>.
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{% url 'recipe-list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to All Recipes
+        </a>
+    </div>
+</div>
+{% endblock %} 

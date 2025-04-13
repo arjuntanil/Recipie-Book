@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Google OAuth Diagnostic{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Google OAuth Configuration Diagnostic</h2>
+                </div>
+                <div class="card-body">
+                    {% if google_configured %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Google OAuth is configured in your Django admin.
+                        </div>
+                        
+                        <h4>Configuration Details</h4>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Provider Name</th>
+                                <td>{{ app_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Client ID</th>
+                                <td>{{ client_id_preview }} {% if client_id_preview == '[Invalid]' %}<span class="text-danger">(Invalid format)</span>{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th>Secret Key</th>
+                                <td>
+                                    {% if has_secret %}
+                                        {{ secret_preview }} {% if secret_preview == '[Invalid]' %}<span class="text-danger">(Invalid format)</span>{% endif %}
+                                    {% else %}
+                                        <span class="text-danger">Missing</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <h4 class="mt-4">Site Configuration</h4>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Current Site</th>
+                                <td>{{ current_site }}</td>
+                            </tr>
+                            <tr>
+                                <th>Associated Sites</th>
+                                <td>
+                                    {% if sites %}
+                                        <ul class="mb-0">
+                                        {% for site in sites %}
+                                            <li>{{ site }}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <span class="text-danger">No sites associated</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Site Status</th>
+                                <td>
+                                    {% if site_matches %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Current site is associated</span>
+                                    {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Current site is NOT associated with Google OAuth</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <h4 class="mt-4">Callback URL</h4>
+                        <div class="alert alert-info">
+                            <p><strong>Important:</strong> Make sure this exact URL is configured in your Google Cloud Console:</p>
+                            <code>{{ callback_url }}</code>
+                        </div>
+                        
+                        <h4 class="mt-4">Common Issues</h4>
+                        <div class="accordion" id="accordionIssues">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        <strong>Error 401: invalid_client</strong>
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionIssues">
+                                    <div class="accordion-body">
+                                        <p>This error typically means your OAuth credentials are not correctly configured in Google Cloud Console or Django admin. Common causes:</p>
+                                        <ul>
+                                            <li>Client ID or Client Secret entered incorrectly in Django admin</li>
+                                            <li>The redirect URI in Google Cloud Console doesn't exactly match <code>{{ callback_url }}</code> (including the trailing slash)</li>
+                                            <li>Your Google OAuth app may need to be published or your email added as a test user</li>
+                                            <li>Browser cache/cookies issues with Google Authentication</li>
+                                        </ul>
+                                        <p><strong>Solution:</strong> Double-check your credentials in both Google Cloud Console and Django admin. Ensure your JavaScript origins and redirect URIs are exactly as shown above.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        <strong>Google login button doesn't do anything</strong>
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionIssues">
+                                    <div class="accordion-body">
+                                        <p>If the Google login button doesn't redirect you to Google's login page, check:</p>
+                                        <ul>
+                                            <li>JavaScript errors in your browser console</li>
+                                            <li>Ensure Google APIs are enabled in your Google Cloud Console</li>
+                                            <li>Check that your Google Cloud project is still active</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Google OAuth is <strong>not configured</strong> in your Django admin.
+                        </div>
+                        
+                        <h4>Setup Instructions</h4>
+                        <p>To configure Google OAuth, follow these steps:</p>
+                        <ol>
+                            <li>Go to <a href="{% url 'setup-google-oauth' %}">Google OAuth Setup Guide</a> and follow the instructions</li>
+                            <li>After configuration, come back to this page to verify your setup</li>
+                        </ol>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'login' %}" class="btn btn-secondary me-2">Back to Login</a>
+                        <a href="{% url 'setup-google-oauth' %}" class="btn btn-primary">View Setup Guide</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Edit Recipe{% else %}Add Recipe{% endif %} - Recipe Book{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/recipe_form.css">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'recipe-list' %}">Recipes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if object %}Edit {{ object.name }}{% else %}Add Recipe{% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="recipe-form-container">
+                <div class="card-header bg-white py-4 px-4">
+                    <h2 class="mb-0">{% if object %}Edit Recipe{% else %}Add New Recipe{% endif %}</h2>
+                    <p class="text-muted mb-0">Share your culinary masterpiece with the world</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Recipe Details</h4>
+                            {% crispy form %}
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Ingredients</h4>
+                            <p class="text-muted mb-4">List all ingredients needed for this recipe</p>
+                            <div id="ingredient-formset" class="formset-container">
+                                {{ ingredient_formset.management_form }}
+                                
+                                {% for form in ingredient_formset %}
+                                    <div class="formset-item ingredient-form">
+                                        {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.name.id_for_label }}">Ingredient</label>
+                                                    {{ form.name|as_crispy_field }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+                                                    {{ form.quantity|as_crispy_field }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.unit.id_for_label }}">Unit</label>
+                                                    {{ form.unit|as_crispy_field }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if form.instance.pk %}
+                                            <div class="delete-row">
+                                                <div class="form-check">
+                                                    <label class="form-check-label">
+                                                        <input type="checkbox" name="{{ form.DELETE.html_name }}" id="{{ form.DELETE.id_for_label }}" class="form-check-input delete-checkbox">
+                                                        Delete this ingredient
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-4">
+                                <button type="button" class="btn add-item-btn" id="add-ingredient">
+                                    <i class="fas fa-plus"></i> Add Ingredient
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Recipe Images</h4>
+                            <p class="text-muted mb-4">Add photos to showcase your dish</p>
+                            <div id="image-formset" class="formset-container">
+                                {{ image_formset.management_form }}
+                                
+                                {% for form in image_formset %}
+                                    <div class="formset-item image-form">
+                                        {% if form.instance.pk %}
+                                            <div class="image-preview">
+                                                <img src="{{ form.instance.image.url }}" alt="Recipe image">
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    {% if form.instance.pk %}
+                                                        <label for="{{ form.image.id_for_label }}">Change Image</label>
+                                                    {% else %}
+                                                        <label for="{{ form.image.id_for_label }}">Upload Image</label>
+                                                    {% endif %}
+                                                    {{ form.image|as_crispy_field }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-4">
+                                                    {{ form.is_primary|as_crispy_field }}
+                                                    <label for="{{ form.is_primary.id_for_label }}" class="form-check-label">
+                                                        Set as main image
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if form.instance.pk %}
+                                            <div class="delete-row">
+                                                <div class="form-check">
+                                                    <label class="form-check-label">
+                                                        <input type="checkbox" name="{{ form.DELETE.html_name }}" id="{{ form.DELETE.id_for_label }}" class="form-check-input delete-checkbox">
+                                                        Delete this image
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-4">
+                                <button type="button" class="btn add-item-btn" id="add-image">
+                                    <i class="fas fa-plus"></i> Add Image
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <a href="{% if object %}{% url 'recipe-detail' object.pk %}{% else %}{% url 'recipe-list' %}{% endif %}" class="btn cancel-btn">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn submit-btn">
+                                <i class="fas fa-save"></i> Save Recipe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Clone formset template and update attributes for ingredients
+    function updateIngredientFormsetIndex() {
+        $('#ingredient-formset [name]').each(function() {
+            let name = $(this).attr('name');
+            if (name) {
+                name = name.replace(/ingredient_set-\d+-/g, function(match) {
+                    return match;
+                });
+                $(this).attr('name', name);
+            }
+        });
+    }
+    
+    $('#add-ingredient').click(function() {
+        let form_idx = $('#id_ingredient_set-TOTAL_FORMS').val();
+        let newForm = $('.ingredient-form:first').clone(true);
+        
+        // Clear existing values
+        newForm.find('input').val('');
+        
+        // Update form indexes
+        newForm.find('input, select, textarea').each(function() {
+            let name = $(this).attr('name');
+            if (name) {
+                name = name.replace(/ingredient_set-0-/, `ingredient_set-${form_idx}-`);
+                $(this).attr('name', name);
+                $(this).attr('id', `id_${name}`);
+            }
+        });
+        
+        newForm.find('label').each(function() {
+            let newFor = $(this).attr('for');
+            if (newFor) {
+                newFor = newFor.replace(/ingredient_set-0-/, `ingredient_set-${form_idx}-`);
+                $(this).attr('for', newFor);
+            }
+        });
+        
+        // Remove any existing delete row
+        newForm.find('.delete-row').remove();
+        
+        $('#ingredient-formset').append(newForm);
+        $('#id_ingredient_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    });
+    
+    // Clone formset template and update attributes for images
+    function updateImageFormsetIndex() {
+        $('#image-formset [name]').each(function() {
+            let name = $(this).attr('name');
+            if (name) {
+                name = name.replace(/images-\d+-/g, function(match) {
+                    return match;
+                });
+                $(this).attr('name', name);
+            }
+        });
+    }
+    
+    $('#add-image').click(function() {
+        let form_idx = $('#id_images-TOTAL_FORMS').val();
+        let newForm = $('.image-form:first').clone(true);
+        
+        // Clear existing images and values
+        newForm.find('.image-preview').remove();
+        newForm.find('input:not([type="checkbox"])').val('');
+        newForm.find('input[type="checkbox"]').prop('checked', false);
+        
+        // Update form indexes
+        newForm.find('input, select, textarea').each(function() {
+            let name = $(this).attr('name');
+            if (name) {
+                name = name.replace(/images-0-/, `images-${form_idx}-`);
+                $(this).attr('name', name);
+                $(this).attr('id', `id_${name}`);
+            }
+        });
+        
+        newForm.find('label').each(function() {
+            let newFor = $(this).attr('for');
+            if (newFor) {
+                newFor = newFor.replace(/images-0-/, `images-${form_idx}-`);
+                $(this).attr('for', newFor);
+            }
+        });
+        
+        // Remove any existing delete row
+        newForm.find('.delete-row').remove();
+        
+        $('#image-formset').append(newForm);
+        $('#id_images-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    });
+});
+</script>
+{% endblock %} 

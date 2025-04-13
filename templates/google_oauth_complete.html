@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Configure Google OAuth{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h2 class="mb-0">Google OAuth Configuration</h2>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Register Google OAuth in Django Admin</h4>
+                    <p>Now that you have your Google OAuth credentials, follow these steps to configure them in your Django admin:</p>
+                    
+                    <ol>
+                        <li>Go to <a href="http://127.0.0.1:8000/admin/socialaccount/socialapp/add/" target="_blank">Add Social Application</a> in your Django admin</li>
+                        <li>Fill in the form with these values:
+                            <ul>
+                                <li><strong>Provider:</strong> Google</li>
+                                <li><strong>Name:</strong> Google</li>
+                                <li><strong>Client ID:</strong> (paste your Google Client ID here)</li>
+                                <li><strong>Secret Key:</strong> (paste your Google Client Secret here)</li>
+                                <li><strong>Key:</strong> (leave blank)</li>
+                                <li><strong>Sites:</strong> Add your site (usually "127.0.0.1:8000") to the chosen sites</li>
+                            </ul>
+                        </li>
+                        <li>Click "Save"</li>
+                    </ol>
+                    
+                    <h4 class="mb-3 mt-4">Update Your Templates</h4>
+                    <p>After completing the configuration, you'll need to update your login and register templates:</p>
+                    
+                    <ol>
+                        <li>Open <code>templates/recipes/login.html</code> and <code>templates/recipes/register.html</code></li>
+                        <li>Replace the current Google button sections with the proper OAuth links:
+                            <pre><code>
+&lt;!-- In login.html --&gt;
+&lt;a href="{% templatetag openblock %} provider_login_url 'google' {% templatetag closeblock %}" class="btn btn-outline-dark"&gt;
+    &lt;i class="fab fa-google me-2"&gt;&lt;/i&gt;Sign in with Google
+&lt;/a&gt;
+
+&lt;!-- In register.html --&gt;
+&lt;a href="{% templatetag openblock %} provider_login_url 'google' process='signup' {% templatetag closeblock %}" class="btn btn-outline-dark"&gt;
+    &lt;i class="fab fa-google me-2"&gt;&lt;/i&gt;Sign up with Google
+&lt;/a&gt;
+                            </code></pre>
+                        </li>
+                    </ol>
+                    
+                    <div class="alert alert-success mt-3">
+                        <strong>Well done!</strong> You've successfully set up Google OAuth for your Recipe Book application!
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'recipe-list' %}" class="btn btn-primary">Return to Recipes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

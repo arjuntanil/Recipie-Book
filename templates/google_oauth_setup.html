@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Google OAuth Setup{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Google OAuth Setup Guide</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> After completing these steps, you will need to restart your Django server for changes to take effect.
+                    </div>
+                    
+                    <h4 class="mb-3">Step 1: Create Google OAuth Credentials</h4>
+                    <ol>
+                        <li>Go to the <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                        <li>Create a new project or select an existing one</li>
+                        <li>Navigate to "APIs & Services" > "Credentials"</li>
+                        <li>Click "Create Credentials" > "OAuth client ID"</li>
+                        <li>If prompted, configure the OAuth consent screen first:
+                            <ul>
+                                <li>Set User Type to "External"</li>
+                                <li>Fill in the required fields (App name, support email, developer email)</li>
+                                <li>Click "Save and Continue" through all steps</li>
+                            </ul>
+                        </li>
+                        <li>Return to "Create OAuth client ID"</li>
+                        <li>Set the application type to "Web application"</li>
+                        <li>Add a name (e.g., "Recipe Book")</li>
+                        <li>Under "Authorized JavaScript origins", add: <code>http://127.0.0.1:8000</code></li>
+                        <li>Under "Authorized redirect URIs", add: <code>http://127.0.0.1:8000/accounts/google/login/callback/</code></li>
+                        <li>Click "Create"</li>
+                        <li><strong>Save your Client ID and Client Secret</strong> (you'll need these in the next step)</li>
+                    </ol>
+
+                    <h4 class="mb-3 mt-4">Step 2: Configure Django Admin</h4>
+                    <ol>
+                        <li>Make sure you've created a superuser account using <code>python manage.py createsuperuser</code></li>
+                        <li>Go to <a href="http://127.0.0.1:8000/admin/" target="_blank">Django Admin</a></li>
+                        <li>Log in with your superuser credentials</li>
+                        <li>Navigate to <strong>Social Applications</strong> under the Social Accounts section</li>
+                        <li>Click "Add Social Application"</li>
+                        <li>Fill in the form:
+                            <ul>
+                                <li>Provider: Google</li>
+                                <li>Name: Google</li>
+                                <li>Client ID: (paste your Google Client ID)</li>
+                                <li>Secret Key: (paste your Google Client Secret)</li>
+                                <li>Sites: Add site "127.0.0.1:8000" to "Chosen sites"</li>
+                            </ul>
+                        </li>
+                        <li>Click "Save"</li>
+                    </ol>
+
+                    <div class="alert alert-success mt-3">
+                        <strong>All set!</strong> Once you've completed these steps, return to the login or register page and try the Google authentication buttons again.
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'login' %}" class="btn btn-primary">Return to Login</a>
+                        <a href="{% url 'google-complete' %}" class="btn btn-success ms-2">I've Got My Credentials</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
