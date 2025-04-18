@@ -107,16 +107,21 @@ class IngredientForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['quantity'].required = False
+        self.fields['unit'].required = False
         self.helper = FormHelper()
         self.helper.form_tag = False
-        self.helper.layout = Layout(
-            Row(
-                Column('name', css_class='form-group col-md-4'),
-                Column('quantity', css_class='form-group col-md-4'),
-                Column('unit', css_class='form-group col-md-4'),
-                css_class='form-row'
-            )
-        )
+
+IngredientFormSet = inlineformset_factory(
+    Recipe,
+    Ingredient,
+    form=IngredientForm,
+    extra=1,
+    min_num=0,
+    max_num=50,
+    validate_min=False,
+    can_delete=True
+)
 
 class RecipeImageForm(forms.ModelForm):
     class Meta:
@@ -129,21 +134,19 @@ class RecipeImageForm(forms.ModelForm):
         labels = {
             'is_primary': 'Set as main image',
         }
-
-IngredientFormSet = inlineformset_factory(
-    Recipe,
-    Ingredient,
-    form=IngredientForm,
-    extra=3,
-    can_delete=True,
-)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make image field not required when editing (instance already exists)
+        if self.instance and self.instance.pk:
+            self.fields['image'].required = False
 
 RecipeImageFormSet = inlineformset_factory(
     Recipe,
     RecipeImage,
     form=RecipeImageForm,
     extra=1,
-    can_delete=True,
+    can_delete=True
 )
 
 class UserRegisterForm(UserCreationForm):

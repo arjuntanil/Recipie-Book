@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load recipe_filters %}
 
 {% block extra_css %}
 <style>
@@ -446,6 +447,168 @@
         background-color: #0A1D37;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
+
+    /* New recipe badge */
+    .new-recipe-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 50px;
+        margin-left: 5px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        vertical-align: middle;
+        box-shadow: 0 2px 5px rgba(76, 175, 80, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Filter section */
+    .filters-section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .filter-group {
+        margin-bottom: 15px;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    
+    /* Recipe grid */
+    .recipe-grid {
+        margin-bottom: 40px;
+    }
+    
+    .recipe-card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+        transition: transform 0.3s ease;
+        height: 100%;
+        background: white;
+    }
+    
+    .recipe-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .recipe-image {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .recipe-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .recipe-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
+    
+    .recipe-content {
+        padding: 20px;
+    }
+    
+    .recipe-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .recipe-meta {
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .recipe-meta i {
+        margin-right: 5px;
+        color: #5c7cfa;
+    }
+    
+    .recipe-description {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+    
+    /* Pagination */
+    .pagination {
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .page-link {
+        color: #5c7cfa;
+        padding: 8px 16px;
+        margin: 0 4px;
+        border-radius: 4px;
+    }
+    
+    .page-link:hover {
+        background-color: #5c7cfa;
+        color: white;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #5c7cfa;
+        border-color: #5c7cfa;
+    }
+    
+    /* No results */
+    .no-results {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .no-results i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 20px;
+    }
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800&display=swap">
 {% endblock %}
@@ -468,170 +631,136 @@
     </div>
 </header>
 
-<div class="container">
-    <!-- Filters -->
-    <div class="filter-card">
-        <div class="filter-header">
-            <h5 class="filter-title">
-                <i class="fas fa-sliders-h me-2"></i> Filter Recipes
-            </h5>
-        </div>
-        <div class="filter-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="category" class="form-label">Category</label>
-                    <select name="category" id="category" class="form-select">
+<div class="container py-5">
+    <h1 class="mb-4">Recipe Collection</h1>
+    
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <form method="get" class="row">
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Category</label>
+                    <select name="category" class="form-select">
                         <option value="">All Categories</option>
                         {% for category in categories %}
-                        <option value="{{ category.0 }}" {% if current_category == category.0 %}selected{% endif %}>
-                            {{ category.1 }}
+                        <option value="{{ category.code }}" {% if current_category == category.code %}selected{% endif %}>
+                            {{ category.name }} ({{ category.count }})
                         </option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="difficulty" class="form-label">Difficulty</label>
-                    <select name="difficulty" id="difficulty" class="form-select">
-                        <option value="">All Levels</option>
-                        {% for difficulty in difficulties %}
-                        <option value="{{ difficulty.0 }}" {% if request.GET.difficulty == difficulty.0 %}selected{% endif %}>
-                            {{ difficulty.1 }}
-                        </option>
-                        {% endfor %}
+            </div>
+            
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Difficulty</label>
+                    <select name="difficulty" class="form-select">
+                        <option value="">All Difficulties</option>
+                        <option value="easy" {% if request.GET.difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                        <option value="medium" {% if request.GET.difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="hard" {% if request.GET.difficulty == 'hard' %}selected{% endif %}>Hard</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary btn-filter me-2">
-                        <i class="fas fa-filter me-2"></i> Apply Filters
-                    </button>
-                    <a href="{% url 'recipe-list' %}" class="btn btn-outline-secondary btn-filter">
-                        <i class="fas fa-redo-alt me-2"></i> Reset
-                    </a>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select name="sort" class="form-select">
+                        <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+                        <option value="most_viewed" {% if request.GET.sort == 'most_viewed' %}selected{% endif %}>Most Viewed</option>
+                        <option value="least_viewed" {% if request.GET.sort == 'least_viewed' %}selected{% endif %}>Least Viewed</option>
+                    </select>
                 </div>
-            </form>
-        </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
     </div>
-
+    
     <!-- Recipe Grid -->
     <div class="recipe-grid">
         <div class="row">
-            {% for recipe in object_list %}
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="recipe-card h-100">
-                    <div class="recipe-img-container">
-                        {% if recipe.images.first %}
-                        <img src="{{ recipe.images.first.image.url }}" class="recipe-img" alt="{{ recipe.name }}">
+            {% for recipe in recipes %}
+            <div class="col-md-4 mb-4">
+                <div class="recipe-card">
+                    <div class="recipe-image">
+                        {% if recipe.recipeimage_set.first %}
+                        <img src="{{ recipe.recipeimage_set.first.image.url }}" alt="{{ recipe.name }}">
                         {% else %}
-                        <img src="https://via.placeholder.com/600x400?text=No+Image" class="recipe-img" alt="No Image">
+                        <img src="{% static 'images/default-recipe.jpg' %}" alt="{{ recipe.name }}">
                         {% endif %}
-                        <div class="recipe-category-badge">{{ recipe.get_category_display }}</div>
-                        <div class="recipe-views">
-                            <i class="fas fa-eye"></i> {{ recipe.view_count }}
+                        <div class="recipe-badge">
+                            <i class="fas fa-eye"></i> {{ recipe.view_count }} views
                         </div>
                     </div>
-                    <div class="recipe-body">
-                        <h3 class="recipe-title">
-                            <a href="{% url 'recipe-detail' recipe.pk %}">{{ recipe.name }}</a>
-                        </h3>
+                    <div class="recipe-content">
+                        <h3 class="recipe-title">{{ recipe.name }}</h3>
                         <div class="recipe-meta">
-                            <div class="recipe-meta-item">
-                                <i class="fas fa-clock"></i>
-                                <span>{{ recipe.total_time }} mins</span>
-                            </div>
-                            <div class="recipe-meta-item">
-                                <i class="fas fa-utensils"></i>
-                                <span>{{ recipe.get_difficulty_display }}</span>
-                            </div>
-                            <div class="recipe-meta-item">
-                                <i class="fas fa-users"></i>
-                                <span>{{ recipe.servings }} servings</span>
-                            </div>
+                            <span><i class="fas fa-clock"></i> {{ recipe.total_time }} mins</span>
+                            <span><i class="fas fa-user"></i> {{ recipe.user.username }}</span>
                         </div>
-                        <p class="recipe-description">{{ recipe.description|truncatechars:120 }}</p>
-                        <div class="recipe-footer">
-                            <div class="recipe-author">
-                                {% if recipe.user.profile.profile_picture %}
-                                <img src="{{ recipe.user.profile.profile_picture.url }}" class="author-img" alt="{{ recipe.user.username }}">
-                                {% else %}
-                                <div class="author-placeholder">
-                                    <i class="fas fa-user fa-sm"></i>
-                                </div>
-                                {% endif %}
-                                <span class="author-name">{{ recipe.user.username }}</span>
-                            </div>
-                            <a href="{% url 'recipe-detail' recipe.pk %}" class="btn btn-view-recipe">
-                                View Recipe
-                            </a>
-                        </div>
+                        <p class="recipe-description">{{ recipe.description|truncatechars:100 }}</p>
+                        <a href="{% url 'recipes:recipe-detail' recipe.pk %}" class="btn btn-outline-primary btn-sm">View Recipe</a>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center py-5">
-                <div class="d-flex flex-column align-items-center">
-                    <i class="fas fa-utensils fa-5x mb-4 text-muted"></i>
-                    <h3 class="mb-3">No recipes found</h3>
-                    <p class="text-muted">Try adjusting your filters or create a new recipe.</p>
-                    <a href="{% url 'recipe-create' %}" class="btn btn-primary mt-3">
-                        <i class="fas fa-plus me-2"></i> Add Your First Recipe
-                    </a>
+            <div class="col-12">
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No Recipes Found</h3>
+                    <p>Try adjusting your filters or create a new recipe.</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'recipes:recipe-create' %}" class="btn btn-primary mt-3">Create New Recipe</a>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-
+    
     <!-- Pagination -->
     {% if is_paginated %}
-    <nav aria-label="Page navigation">
-        <ul class="pagination custom-pagination">
+    <nav aria-label="Recipe pagination">
+        <ul class="pagination">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="First">
-                    <i class="fas fa-angle-double-left"></i>
+                <a class="page-link" href="?page=1{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="Previous">
-                    <i class="fas fa-angle-left"></i>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
-            </li>
-            <li class="page-item disabled">
-                <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Previous</a>
             </li>
             {% endif %}
-
+            
             {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}">{{ num }}</a>
+                <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ num }}</a>
             </li>
             {% endif %}
             {% endfor %}
-
+            
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="Next">
-                    <i class="fas fa-angle-right"></i>
-                </a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Next</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}" aria-label="Last">
-                    <i class="fas fa-angle-double-right"></i>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;</span>
                 </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <span class="page-link"><i class="fas fa-angle-right"></i></span>
-            </li>
-            <li class="page-item disabled">
-                <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
             </li>
             {% endif %}
         </ul>
@@ -641,7 +770,7 @@
 
 <!-- Floating Add Recipe Button -->
 {% if user.is_authenticated %}
-<a href="{% url 'recipe-create' %}" class="btn-add-recipe" title="Add New Recipe">
+<a href="{% url 'recipes:recipe-create' %}" class="btn-add-recipe" title="Add New Recipe">
     <i class="fas fa-plus"></i>
 </a>
 {% endif %}
@@ -665,6 +794,16 @@
         
         // Set interval for automatic sliding (7 seconds)
         setInterval(nextSlide, 7000);
+        
+        // Clear view history functionality
+        const clearViewHistoryBtn = document.getElementById('clear-view-history');
+        if (clearViewHistoryBtn) {
+            clearViewHistoryBtn.addEventListener('click', function() {
+                if (confirm('This will reset which recipes appear as new. Continue?')) {
+                    window.location.href = '{% url "recipes:clear-view-history" %}';
+                }
+            });
+        }
     });
 </script>
 {% endblock %} 

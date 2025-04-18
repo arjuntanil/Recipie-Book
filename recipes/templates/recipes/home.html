@@ -1,0 +1,741 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load recipe_extras %}
+
+{% block extra_css %}
+<style>
+    /* Enhanced Hero section styles */
+    .hero-section {
+        position: relative;
+        color: white;
+        padding: 150px 0;
+        margin-top: -20px;
+        overflow: hidden;
+        perspective: 1000px;
+    }
+    
+    .hero-bg-carousel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        transform-style: preserve-3d;
+    }
+    
+    .hero-bg-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: scale(1.1);
+    }
+    
+    .hero-bg-slide.active {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.8) 0%,
+            rgba(0, 0, 0, 0.6) 100%
+        );
+        z-index: -1;
+        backdrop-filter: blur(3px);
+    }
+    
+    .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientFlow 8s ease infinite;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.4rem;
+        margin-bottom: 2.5rem;
+        line-height: 1.6;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+    }
+
+    /* Enhanced Button Styles */
+    .btn-hero {
+        position: relative;
+        padding: 15px 35px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border: none;
+        border-radius: 50px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateY(20px);
+        opacity: 0;
+        animation: fadeInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+    }
+
+    .btn-hero.btn-primary {
+        background: linear-gradient(135deg, #C59D5F 0%, #B08D4F 100%);
+        box-shadow: 0 4px 15px rgba(197, 157, 95, 0.3);
+    }
+
+    .btn-hero.btn-outline-light {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #0A1D37 0%, #1a365d 100%);
+        opacity: 0;
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: -1;
+    }
+
+    .btn-hero::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 80%);
+        transform: scale(0);
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(197, 157, 95, 0.4);
+        color: white;
+    }
+
+    .btn-hero:hover::before {
+        opacity: 1;
+    }
+
+    .btn-hero:hover::after {
+        transform: scale(1) rotate(35deg);
+    }
+
+    .btn-hero:active {
+        transform: translateY(-1px);
+    }
+
+    /* Enhanced Featured Section Styles */
+    .featured-section {
+        padding: 100px 0;
+        background-color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 60px;
+        position: relative;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    .section-title.in-view {
+        animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .section-title h2 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #0A1D37;
+        display: inline-block;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .section-title h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(135deg, #C59D5F 0%, #B08D4F 100%);
+        transform: translateX(-50%) scaleX(0);
+        transform-origin: center;
+        animation: lineExpand 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+    }
+
+    /* Enhanced Recipe Card Animations */
+    .recipe-card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        height: 100%;
+        opacity: 0;
+        transform: translateY(30px);
+        background: white;
+    }
+
+    .recipe-card.in-view {
+        animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .recipe-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .recipe-card-img {
+        position: relative;
+        width: 100%;
+        height: 240px;
+        overflow: hidden;
+    }
+
+    .recipe-card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .recipe-card:hover .recipe-card-img img {
+        transform: scale(1.08);
+    }
+
+    .view-count {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .recipe-card:hover .view-count {
+        background: rgba(197, 157, 95, 0.9);
+    }
+
+    .recipe-card-body {
+        padding: 1.5rem;
+    }
+
+    .recipe-category {
+        color: #C59D5F;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .recipe-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0A1D37;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .recipe-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .recipe-meta > div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .recipe-meta i {
+        color: #C59D5F;
+    }
+
+    .recipe-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #666;
+        margin-bottom: 1.25rem;
+    }
+
+    .recipe-card .btn-outline-primary {
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-color: #C59D5F;
+        color: #C59D5F;
+    }
+
+    .recipe-card .btn-outline-primary:hover {
+        background: #C59D5F;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(197, 157, 95, 0.2);
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes lineExpand {
+        from {
+            transform: translateX(-50%) scaleX(0);
+        }
+        to {
+            transform: translateX(-50%) scaleX(1);
+        }
+    }
+
+    @keyframes gradientFlow {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.8rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .btn-hero {
+            padding: 12px 25px;
+            font-size: 1rem;
+        }
+
+        .recipe-card-img {
+            height: 200px;
+        }
+        
+        .recipe-card-body {
+            padding: 1.25rem;
+        }
+        
+        .recipe-title {
+            font-size: 1.1rem;
+        }
+    }
+
+    /* Enhanced Navbar Styles */
+    .navbar {
+        padding: 1.25rem 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0A1D37;
+    }
+
+    .nav-link {
+        font-weight: 600;
+        padding: 0.5rem 1.2rem !important;
+        transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+        color: #C59D5F !important;
+    }
+
+    /* Recipe Card Author Styles */
+    .recipe-card-author {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 1rem 0;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .author-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .author-info {
+        flex: 1;
+    }
+
+    .author-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0A1D37;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .author-date {
+        font-size: 0.8rem;
+        color: #666;
+        margin: 0;
+    }
+
+    /* Add Footer Styles */
+    .footer {
+        background: #0A1D37;
+        color: #fff;
+        padding: 5rem 0 2rem;
+        margin-top: 4rem;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .footer-section h3 {
+        color: #C59D5F;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .footer-section h3::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 40px;
+        height: 2px;
+        background: #C59D5F;
+    }
+
+    .footer-section p {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-links li {
+        margin-bottom: 0.8rem;
+    }
+
+    .footer-links a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .footer-links a:hover {
+        color: #C59D5F;
+    }
+
+    .footer-social {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .social-icon:hover {
+        background: #C59D5F;
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .footer-newsletter .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        padding: 0.8rem 1rem;
+        margin-right: 0.5rem;
+    }
+
+    .footer-newsletter .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .footer-newsletter .btn-primary {
+        background: #C59D5F;
+        border-color: #C59D5F;
+        padding: 0.8rem 1.5rem;
+    }
+
+    .footer-newsletter .btn-primary:hover {
+        background: #B08D4F;
+        border-color: #B08D4F;
+    }
+
+    .footer-bottom {
+        text-align: center;
+        padding-top: 2rem;
+        margin-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .footer {
+            padding: 3rem 0 1.5rem;
+        }
+        
+        .footer-content {
+            gap: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg-carousel">
+        <div class="hero-bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1556911220-bff31c812dba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200');"></div>
+        <div class="hero-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1495521821757-a1efb6729352?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200');"></div>
+        <div class="hero-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1514326640560-7d063ef2aed5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200');"></div>
+        <div class="hero-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1542010589005-d1eacc3918f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200');"></div>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Discover Delicious Recipes</h1>
+            <p class="hero-subtitle">Explore a world of culinary delights with our collection of handpicked recipes. 
+                From simple comfort food to gourmet delicacies, find your next favorite dish.</p>
+            <div>
+                <a href="{% url 'recipes:recipe-list' %}" class="btn btn-primary btn-hero me-3">Browse Recipes</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'recipes:recipe-create' %}" class="btn btn-outline-light btn-hero">Share Your Recipe</a>
+                {% else %}
+                <a href="{% url 'recipes:register' %}" class="btn btn-outline-light btn-hero">Join Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Recipes Section -->
+<section class="featured-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Most Popular Recipes</h2>
+            <p>Our community's favorite recipes based on views</p>
+        </div>
+        
+        <div class="row">
+            {% for recipe in featured_recipes %}
+            <div class="col-md-4 mb-4">
+                <div class="recipe-card">
+                    <div class="recipe-card-img">
+                        {% if recipe.recipeimage_set.first %}
+                        <img src="{{ recipe.recipeimage_set.first.image.url }}" alt="{{ recipe.name }}">
+                        {% else %}
+                        <img src="{% static 'images/default-recipe.jpg' %}" alt="{{ recipe.name }}">
+                        {% endif %}
+                        <div class="view-count">
+                            <i class="fas fa-eye"></i> {{ recipe.view_count }}
+                        </div>
+                    </div>
+                    <div class="recipe-card-body">
+                        <div class="recipe-category">{{ recipe.get_category_display }}</div>
+                        <h3 class="recipe-title">{{ recipe.name }}</h3>
+                        <div class="recipe-meta">
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                <span>{{ recipe.total_time }} mins</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-utensils"></i>
+                                <span>{{ recipe.get_difficulty_display }}</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-users"></i>
+                                <span>{{ recipe.servings }} servings</span>
+                            </div>
+                        </div>
+                        <p class="recipe-description">{{ recipe.description|truncatechars:100 }}</p>
+                        <!-- Add author information -->
+                        <div class="recipe-card-author">
+                            <div class="author-avatar">
+                                {% if recipe.user.profile.profile_picture %}
+                                <img src="{{ recipe.user.profile.profile_picture.url }}" alt="{{ recipe.user.username }}">
+                                {% else %}
+                                <img src="{% static 'images/default-avatar.png' %}" alt="{{ recipe.user.username }}">
+                                {% endif %}
+                            </div>
+                            <div class="author-info">
+                                <p class="author-name">{{ recipe.user.get_full_name|default:recipe.user.username }}</p>
+                                <p class="author-date">{{ recipe.created_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'recipes:recipe-detail' recipe.pk %}" class="btn btn-outline-primary">View Recipe</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No recipes found.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'recipes:recipe-list' %}" class="btn btn-primary btn-hero">View All Recipes</a>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2 class="cta-title">Ready to Share Your Culinary Masterpiece?</h2>
+        <p class="cta-text">Join our community of food enthusiasts and share your favorite recipes with the world. 
+            Whether it's a family secret or a new creation, we'd love to see what you're cooking!</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'recipes:recipe-create' %}" class="btn btn-primary btn-hero">Create Recipe</a>
+        {% else %}
+        <a href="{% url 'recipes:login' %}" class="btn btn-primary btn-hero me-3">Login</a>
+        <a href="{% url 'recipes:register' %}" class="btn btn-outline-light btn-hero">Register Now</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhanced Background image carousel for hero section
+    document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.hero-bg-slide');
+        let currentSlide = 0;
+        
+        function nextSlide() {
+            // Remove active class from current slide with fade out
+            slides[currentSlide].style.transition = 'opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].style.transform = 'scale(1.1)';
+            
+            // Calculate next slide index
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            // Add active class to next slide with zoom effect
+            slides[currentSlide].style.transform = 'scale(1)';
+            slides[currentSlide].classList.add('active');
+        }
+        
+        // Set interval for automatic sliding (6 seconds)
+        setInterval(nextSlide, 6000);
+
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        // Observe section titles and recipe cards
+        document.querySelectorAll('.section-title, .recipe-card').forEach(el => {
+            observer.observe(el);
+        });
+    });
+</script>
+{% endblock %} 

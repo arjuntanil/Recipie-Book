@@ -1,0 +1,73 @@
+{% extends 'recipes/base.html' %}
+{% load socialaccount %}
+
+{% block title %}Sign in with Google - Recipe Book{% endblock %}
+
+{% block extra_css %}
+<style>
+    .google-signin-container {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .google-signin-card {
+        max-width: 400px;
+        width: 100%;
+        padding: 2rem;
+        text-align: center;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .google-signin-card h2 {
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .google-signin-card p {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+
+    .google-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #4285f4;
+        border-radius: 8px;
+        background: white;
+        color: #4285f4;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .google-btn:hover {
+        background: #4285f4;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .google-btn i {
+        margin-right: 0.75rem;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="google-signin-container">
+    <div class="google-signin-card">
+        <h2>Sign in with Google</h2>
+        <p>You're about to sign in using your Google account. Click the button below to continue.</p>
+        <a href="{% provider_login_url 'google' %}" class="google-btn">
+            <i class="fab fa-google"></i>
+            Continue with Google
+        </a>
+    </div>
+</div>
+{% endblock %}

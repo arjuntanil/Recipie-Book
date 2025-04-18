@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Authentication Error{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <img src="{% static 'images/error-icon.png' %}" alt="Error" class="img-fluid mb-4" style="max-width: 120px;">
+                        <h2 class="text-danger mb-3">Authentication Error</h2>
+                        <p class="lead text-muted">We encountered an issue while trying to sign you in.</p>
+                    </div>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <p class="mb-0">This might happen due to:</p>
+                        <ul class="text-start mt-2 mb-0">
+                            <li>Temporary connection issues</li>
+                            <li>Session timeout</li>
+                            <li>Account verification requirements</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <p class="mb-4">Please try one of these options:</p>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                            <a href="{% url 'recipes:home' %}" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>Go to Homepage
+                            </a>
+                            <a href="{% url 'recipes:login' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Try Again
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .alert-info {
+        background-color: rgba(13, 202, 240, 0.1);
+        border-color: rgba(13, 202, 240, 0.2);
+    }
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    .btn-primary {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #0056b3, #003980);
+        transform: translateY(-1px);
+    }
+    .btn-outline-primary:hover {
+        background: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+        border-color: #007bff;
+    }
+</style>
+{% endblock %} 

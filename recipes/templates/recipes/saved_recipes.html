@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Recipes - Recipe Book{% endblock %}
+
+{% block extra_css %}
+<style>
+    .saved-recipes-header {
+        background: linear-gradient(135deg, #0A1D37 0%, #1a365d 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+    }
+
+    .saved-recipes-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .saved-recipe-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+    .saved-recipe-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .saved-recipe-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .saved-recipe-content {
+        padding: 1.5rem;
+    }
+
+    .saved-recipe-category {
+        color: #C59D5F;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .saved-recipe-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0A1D37;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .saved-recipe-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .saved-recipe-meta i {
+        color: #C59D5F;
+    }
+
+    .saved-date {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 1rem;
+        border-top: 1px solid #eee;
+        padding-top: 1rem;
+    }
+
+    .no-saved-recipes {
+        text-align: center;
+        padding: 3rem 0;
+    }
+
+    .no-saved-recipes i {
+        font-size: 4rem;
+        color: #C59D5F;
+        margin-bottom: 1rem;
+    }
+
+    .no-saved-recipes h3 {
+        color: #0A1D37;
+        margin-bottom: 1rem;
+    }
+
+    .no-saved-recipes p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="saved-recipes-header">
+    <div class="container">
+        <h1 class="saved-recipes-title">My Saved Recipes</h1>
+        <p class="lead">Your collection of favorite recipes</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if saved_recipes %}
+    <div class="row g-4">
+        {% for saved in saved_recipes %}
+        <div class="col-md-4">
+            <div class="saved-recipe-card">
+                {% if saved.recipe.recipeimage_set.first %}
+                <img src="{{ saved.recipe.recipeimage_set.first.image.url }}" alt="{{ saved.recipe.name }}" class="saved-recipe-img">
+                {% else %}
+                <img src="{% static 'images/default-recipe.jpg' %}" alt="{{ saved.recipe.name }}" class="saved-recipe-img">
+                {% endif %}
+                <div class="saved-recipe-content">
+                    <div class="saved-recipe-category">{{ saved.recipe.get_category_display }}</div>
+                    <h3 class="saved-recipe-title">{{ saved.recipe.name }}</h3>
+                    <div class="saved-recipe-meta">
+                        <div><i class="fas fa-clock"></i> {{ saved.recipe.total_time }} mins</div>
+                        <div><i class="fas fa-utensils"></i> {{ saved.recipe.get_difficulty_display }}</div>
+                    </div>
+                    <a href="{% url 'recipes:recipe-detail' saved.recipe.pk %}" class="btn btn-outline-primary w-100">View Recipe</a>
+                    <div class="saved-date">
+                        <i class="fas fa-bookmark"></i> Saved on {{ saved.saved_at|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-saved-recipes">
+        <i class="fas fa-bookmark"></i>
+        <h3>No Saved Recipes Yet</h3>
+        <p>Start saving your favorite recipes to access them quickly!</p>
+        <a href="{% url 'recipes:recipe-list' %}" class="btn btn-primary">Browse Recipes</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

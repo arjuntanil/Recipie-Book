@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load socialaccount %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 400px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .login-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-header h1 {
+        color: #2d3436;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-header p {
+        color: #636e72;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    /* Form Styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        height: 48px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #2d3436;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        color: #2d3436;
+        background-color: #fff;
+        border-color: #74b9ff;
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.1);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #2d3436;
+        font-size: 0.95rem;
+    }
+
+    /* Google Button Styling */
+    .google-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 48px;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        background-color: white;
+        color: #2d3436;
+        font-size: 1rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .google-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, 
+            rgba(66, 133, 244, 0.1),
+            rgba(219, 68, 55, 0.1),
+            rgba(244, 180, 0, 0.1),
+            rgba(15, 157, 88, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .google-btn:hover::before {
+        opacity: 1;
+    }
+
+    .google-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #e1e1e1;
+    }
+
+    .google-btn img {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .google-btn:hover img {
+        transform: scale(1.1);
+    }
+
+    .google-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .google-logo svg {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+    }
+
+    /* Password Field Styling */
+    .password-field-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 8px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        z-index: 2;
+    }
+
+    .password-toggle::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(100, 116, 139, 0.1) 0%, rgba(100, 116, 139, 0) 70%);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .password-toggle:hover::before {
+        opacity: 1;
+    }
+
+    .password-toggle i {
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        color: #64748b;
+    }
+
+    .password-toggle.active i {
+        transform: scale(1.1);
+        color: #2b4d6f;
+    }
+
+    .btn-login {
+        width: 100%;
+        height: 48px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        border: none;
+        color: white;
+        font-weight: 500;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(9, 132, 227, 0.2);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #b2bec3;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .divider span {
+        padding: 0 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+    .login-footer a {
+        color: #0984e3;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .login-footer a:hover {
+        color: #74b9ff;
+    }
+
+    @media (max-width: 576px) {
+        .login-card {
+            padding: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>Welcome Back</h1>
+            <p>Sign in to continue to Recipe Book</p>
+        </div>
+
+        <a href="{% url 'recipes:google-signin' %}" class="google-btn">
+            <div class="google-logo">
+                <svg viewBox="0 0 48 48">
+                    <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
+                    <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>
+                    <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/>
+                    <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
+                </svg>
+            </div>
+            <span>Continue with Google</span>
+        </a>
+
+        <div class="divider">
+            <span>or sign in with email</span>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.username.errors|join:", " }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                <div class="password-field-wrapper">
+                    {{ form.password }}
+                    <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.password.errors|join:", " }}
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Sign In
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>Don't have an account? <a href="{% url 'recipes:register' %}">Create Account</a></p>
+            <a href="{% url 'recipes:home' %}">Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Password Toggle Functionality
+document.querySelectorAll('.password-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+        const passwordField = this.previousElementSibling;
+        const icon = this.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            this.classList.add('active');
+        } else {
+            passwordField.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            this.classList.remove('active');
+        }
+        
+        // Add focus to password field
+        passwordField.focus();
+    });
+});
+
+// Add required attribute to password fields
+document.querySelectorAll('input[type="password"]').forEach(input => {
+    input.setAttribute('required', '');
+    input.classList.add('form-control');
+});
+
+// Add form-control class to username input
+document.querySelector('#{{ form.username.id_for_label }}').classList.add('form-control');
+</script>
+{% endblock %} 

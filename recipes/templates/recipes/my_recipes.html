@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Recipes - Recipe Book{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0A1D37 0%, #1a365d 100%);
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.1;
+    }
+
+    .recipe-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .recipe-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .recipe-image-container {
+        position: relative;
+        padding-top: 66.67%;
+        background-color: #f8f9fa;
+        overflow: hidden;
+    }
+
+    .recipe-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .recipe-card:hover .recipe-image {
+        transform: scale(1.05);
+    }
+
+    .recipe-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .recipe-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a202c;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+
+    .recipe-description {
+        color: #4a5568;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+
+    .recipe-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.875rem;
+        color: #718096;
+        margin-bottom: 1rem;
+    }
+
+    .recipe-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: auto;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #C59D5F 0%, #B08D4F 100%);
+        color: white;
+        padding: 0.875rem 1.75rem;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        z-index: 1;
+    }
+
+    .btn-create::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #0A1D37 0%, #1a365d 100%);
+        opacity: 0;
+        z-index: -1;
+        transition: opacity 0.4s ease;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(197, 157, 95, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-create:hover::before {
+        opacity: 1;
+    }
+
+    .btn-create:active {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(197, 157, 95, 0.2);
+    }
+
+    .btn-create svg {
+        width: 20px;
+        height: 20px;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-create:hover svg {
+        transform: rotate(90deg);
+    }
+
+    .btn-create-text {
+        font-weight: 600;
+        position: relative;
+    }
+
+    .btn-create-text::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: white;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-create:hover .btn-create-text::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    @media (max-width: 768px) {
+        .page-header .container {
+            padding: 2rem 1rem;
+        }
+        
+        .btn-create {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 2rem;
+        color: #C59D5F;
+    }
+
+    .action-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        transition: transform 0.2s ease;
+    }
+
+    .action-icon:hover {
+        transform: scale(1.1);
+    }
+
+    .pagination {
+        margin-top: 3rem;
+    }
+
+    .pagination .page-link {
+        border: none;
+        padding: 0.75rem 1rem;
+        color: #4a5568;
+        margin: 0 0.25rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #f7fafc;
+        color: #C59D5F;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #C59D5F;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="display-5 fw-bold mb-2">My Recipes</h1>
+                <p class="lead mb-0 opacity-75">Manage and organize your personal recipe collection</p>
+            </div>
+            <a href="{% url 'recipes:recipe-create' %}" class="btn-create">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="btn-create-text">Create New Recipe</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="container pb-5">
+    {% if user_recipes %}
+        <div class="row g-4">
+            {% for recipe in user_recipes %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <article class="recipe-card">
+                        <div class="recipe-image-container">
+                            {% if recipe.image %}
+                                <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="recipe-image">
+                            {% else %}
+                                <div class="h-100 d-flex align-items-center justify-content-center">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="recipe-content">
+                            <h2 class="recipe-title">{{ recipe.title }}</h2>
+                            <div class="recipe-meta">
+                                <span>
+                                    <i class="far fa-clock me-1"></i>
+                                    {{ recipe.total_time }} mins
+                                </span>
+                                <span>
+                                    <i class="fas fa-utensils me-1"></i>
+                                    {{ recipe.get_difficulty_display }}
+                                </span>
+                            </div>
+                            <p class="recipe-description">{{ recipe.description|truncatechars:120 }}</p>
+                            <div class="recipe-actions">
+                                <a href="{% url 'recipes:recipe-detail' recipe.id %}" class="btn btn-outline-primary flex-grow-1">
+                                    <i class="fas fa-eye me-1"></i> View
+                                </a>
+                                <a href="{% url 'recipes:recipe-update' recipe.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'recipes:recipe-delete' recipe.id %}" class="btn btn-outline-danger" 
+                                   onclick="return confirm('Are you sure you want to delete this recipe?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav class="pagination justify-content-center" aria-label="Recipe pagination">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z">
+                </path>
+            </svg>
+            <h3 class="h4 mb-3">No recipes yet</h3>
+            <p class="text-muted mb-4">Get started by creating your first recipe</p>
+            <a href="{% url 'recipes:recipe-create' %}" class="btn-create">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="btn-create-text">Create New Recipe</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

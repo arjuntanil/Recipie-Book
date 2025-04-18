@@ -1,1 +1,453 @@
- 
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Edit Recipe{% else %}Add Recipe{% endif %} - Recipe Book{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/recipe_form.css">
+<style>
+    .to-be-deleted {
+        position: relative;
+        background-color: #ffe6e6;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-left: 3px solid #ff4d4d;
+    }
+    
+    .formset-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    
+    .delete-row {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .image-preview {
+        padding: 10px;
+        background-color: white;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    /* New styles for form fields */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #2d3748;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group select:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-group input::placeholder {
+        color: #adb5bd;
+        opacity: 1;
+    }
+
+    .ingredient-form {
+        transition: all 0.3s ease;
+    }
+
+    .ingredient-form:hover {
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-group textarea {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .form-group textarea:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-check-input {
+        margin-top: 0.3rem;
+        margin-right: 0.5rem;
+    }
+
+    .form-check-label {
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'recipes:recipe-list' %}">Recipes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if object %}Edit {{ object.name }}{% else %}Add Recipe{% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="recipe-form-container">
+                <div class="card-header bg-white py-4 px-4">
+                    <h2 class="mb-0">{% if object %}Edit Recipe{% else %}Add New Recipe{% endif %}</h2>
+                    <p class="text-muted mb-0">Share your culinary masterpiece with the world</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Recipe Details</h4>
+                            {% for field in form %}
+                                {% if field.name != 'preparation_steps' %}
+                                    {{ field|as_crispy_field }}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="form-group">
+                                <label for="{{ form.preparation_steps.id_for_label }}">Instructions*</label>
+                                {{ form.preparation_steps }}
+                                {% if form.preparation_steps.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.preparation_steps.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.preparation_steps.help_text %}
+                                    <small class="form-text text-muted">{{ form.preparation_steps.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Ingredients</h4>
+                            <p class="text-muted mb-4">List all ingredients needed for this recipe</p>
+                            <div id="ingredient-formset" class="formset-container">
+                                {{ ingredient_formset.management_form }}
+                                
+                                {% for form in ingredient_formset %}
+                                    <div class="formset-item ingredient-form">
+                                        {% for hidden in form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.name.id_for_label }}">Name</label>
+                                                    {{ form.name }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+                                                    {{ form.quantity }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="{{ form.unit.id_for_label }}">Unit</label>
+                                                    {{ form.unit }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if form.instance.pk %}
+                                            <div class="delete-row">
+                                                <div class="form-check">
+                                                    <label class="form-check-label">
+                                                        <input type="checkbox" name="{{ form.DELETE.html_name }}" id="{{ form.DELETE.id_for_label }}" class="form-check-input delete-checkbox">
+                                                        Delete this ingredient
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-4">
+                                <button type="button" class="btn add-item-btn" id="add-ingredient">
+                                    <i class="fas fa-plus"></i> Add Ingredient
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Recipe Images</h4>
+                            <p class="text-muted mb-4">Add photos to showcase your dish</p>
+                            <div id="image-formset" class="formset-container">
+                                {{ image_formset.management_form }}
+                                
+                                {% for form in image_formset %}
+                                    <div class="formset-item image-form">
+                                        {# Include any hidden fields #}
+                                        {% for hidden in form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+
+                                        {% if form.instance.pk %}
+                                            <div class="image-preview">
+                                                <img src="{{ form.instance.image.url }}" alt="Recipe image" class="img-thumbnail" style="max-height: 150px;">
+                                            </div>
+                                            <div class="mt-2 mb-3">
+                                                <small class="text-muted">Current image: {{ form.instance.image.name|default:"No file selected" }}</small>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    {% if form.instance.pk %}
+                                                        <label for="{{ form.image.id_for_label }}">Change Image (optional)</label>
+                                                        <div class="small text-muted mb-2">Leave blank to keep current image</div>
+                                                    {% else %}
+                                                        <label for="{{ form.image.id_for_label }}">Upload Image</label>
+                                                    {% endif %}
+                                                    {{ form.image|as_crispy_field }}
+                                                    {% if form.image.errors %}
+                                                        <div class="invalid-feedback d-block">
+                                                            {{ form.image.errors }}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-4">
+                                                    <input type="checkbox" name="{{ form.is_primary.html_name }}" 
+                                                           id="{{ form.is_primary.id_for_label }}" 
+                                                           class="form-check-input"
+                                                           {% if form.is_primary.value %}checked{% endif %}>
+                                                    <label for="{{ form.is_primary.id_for_label }}" class="form-check-label">
+                                                        Set as main image
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if form.instance.pk %}
+                                            <div class="delete-row">
+                                                <div class="form-check">
+                                                    <label class="form-check-label">
+                                                        <input type="checkbox" name="{{ form.DELETE.html_name }}" id="{{ form.DELETE.id_for_label }}" class="form-check-input delete-checkbox">
+                                                        Delete this image
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if forloop.last %}
+                                            <hr class="my-3">
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-4">
+                                <button type="button" class="btn add-item-btn" id="add-image">
+                                    <i class="fas fa-plus"></i> Add Image
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <a href="{% if object %}{% url 'recipes:recipe-detail' object.pk %}{% else %}{% url 'recipes:recipe-list' %}{% endif %}" class="btn cancel-btn">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn submit-btn">
+                                <i class="fas fa-save"></i> Save Recipe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add error class to inputs with errors
+    $('.is-invalid').closest('.form-group').addClass('has-error');
+    
+    // Fix any issues with the hidden fields in the formsets
+    function ensureFormsetFields() {
+        // Make sure the TOTAL_FORMS and INITIAL_FORMS are present with values
+        if ($('#id_ingredients-TOTAL_FORMS').length === 0) {
+            // If missing, create them with default values
+            const ingredientFormCount = $('.ingredient-form').length;
+            const initialIngredientCount = $('.ingredient-form').filter(function() {
+                return $(this).find('.delete-row').length > 0;
+            }).length;
+            
+            $('#ingredient-formset').prepend(`
+                <input type="hidden" name="ingredients-TOTAL_FORMS" value="${ingredientFormCount}" id="id_ingredients-TOTAL_FORMS">
+                <input type="hidden" name="ingredients-INITIAL_FORMS" value="${initialIngredientCount}" id="id_ingredients-INITIAL_FORMS">
+                <input type="hidden" name="ingredients-MIN_NUM_FORMS" value="1" id="id_ingredients-MIN_NUM_FORMS">
+                <input type="hidden" name="ingredients-MAX_NUM_FORMS" value="50" id="id_ingredients-MAX_NUM_FORMS">
+            `);
+        }
+        
+        if ($('#id_recipeimage_set-TOTAL_FORMS').length === 0) {
+            // If missing, create them with default values
+            const imageFormCount = $('.image-form').length;
+            const initialImageCount = $('.image-form').filter(function() {
+                return $(this).find('.image-preview').length > 0;
+            }).length;
+            
+            $('#image-formset').prepend(`
+                <input type="hidden" name="recipeimage_set-TOTAL_FORMS" value="${imageFormCount}" id="id_recipeimage_set-TOTAL_FORMS">
+                <input type="hidden" name="recipeimage_set-INITIAL_FORMS" value="${initialImageCount}" id="id_recipeimage_set-INITIAL_FORMS">
+                <input type="hidden" name="recipeimage_set-MIN_NUM_FORMS" value="0" id="id_recipeimage_set-MIN_NUM_FORMS">
+                <input type="hidden" name="recipeimage_set-MAX_NUM_FORMS" value="10" id="id_recipeimage_set-MAX_NUM_FORMS">
+            `);
+        }
+    }
+    
+    // Run on page load
+    ensureFormsetFields();
+    
+    // Clone formset template and update attributes for ingredients
+    $('#add-ingredient').click(function() {
+        let form_idx = parseInt($('#id_ingredients-TOTAL_FORMS').val());
+        let newForm = $('.ingredient-form:first').clone(true);
+        
+        // Clear existing values and errors
+        newForm.find('input').val('');
+        newForm.find('.invalid-feedback').remove();
+        newForm.find('.has-error').removeClass('has-error');
+        
+        // Update form indexes
+        newForm.find('input, select, textarea').each(function() {
+            let name = $(this).attr('name');
+            if (name) {
+                name = name.replace(/ingredients-\d+-/, `ingredients-${form_idx}-`);
+                $(this).attr('name', name);
+                $(this).attr('id', `id_${name}`);
+            }
+        });
+        
+        newForm.find('label').each(function() {
+            let newFor = $(this).attr('for');
+            if (newFor) {
+                newFor = newFor.replace(/ingredients-\d+-/, `ingredients-${form_idx}-`);
+                $(this).attr('for', newFor);
+            }
+        });
+        
+        // Remove any existing delete row
+        newForm.find('.delete-row').remove();
+        
+        $('#ingredient-formset').append(newForm);
+        $('#id_ingredients-TOTAL_FORMS').val(form_idx + 1);
+    });
+    
+    // Clone formset template and update attributes for images
+    $('#add-image').click(function() {
+        let form_idx = parseInt($('#id_recipeimage_set-TOTAL_FORMS').val());
+        let newForm = $('.image-form:first').clone(true);
+        
+        // Clear existing images and values
+        newForm.find('.image-preview').remove();
+        newForm.find('.mt-2.mb-3').remove(); // Remove the "Current image" text
+        newForm.find('input:not([type="hidden"])').val('');
+        newForm.find('input[type="checkbox"]').prop('checked', false);
+        
+        // Update form indexes
+        newForm.find('input, select, textarea').each(function() {
+            let name = $(this).attr('name');
+            if (name) {
+                name = name.replace(/recipeimage_set-0-/, `recipeimage_set-${form_idx}-`);
+                $(this).attr('name', name);
+                $(this).attr('id', `id_${name}`);
+            }
+        });
+        
+        newForm.find('label').each(function() {
+            let newFor = $(this).attr('for');
+            if (newFor) {
+                newFor = newFor.replace(/recipeimage_set-0-/, `recipeimage_set-${form_idx}-`);
+                $(this).attr('for', newFor);
+            }
+        });
+        
+        // Remove any existing delete row
+        newForm.find('.delete-row').remove();
+        
+        // Make sure we have the right label
+        newForm.find('label[for$="image"]').text('Upload Image');
+        newForm.find('.small.text-muted.mb-2').remove();
+        
+        $('#image-formset').append(newForm);
+        $('#id_recipeimage_set-TOTAL_FORMS').val(form_idx + 1);
+    });
+
+    // File input preview (show image name when selected)
+    $('input[type="file"]').on('change', function() {
+        let fileName = $(this).val().split('\\').pop();
+        if (fileName) {
+            $(this).next('.custom-file-label').text(fileName);
+        }
+    });
+
+    // Mark recipe image as deleted when delete checkbox is checked
+    $('.delete-checkbox').on('change', function() {
+        const formItem = $(this).closest('.formset-item');
+        if (this.checked) {
+            formItem.addClass('to-be-deleted');
+            formItem.find('.image-preview img').css('opacity', '0.3');
+        } else {
+            formItem.removeClass('to-be-deleted');
+            formItem.find('.image-preview img').css('opacity', '1');
+        }
+    });
+});
+</script>
+{% endblock %} 

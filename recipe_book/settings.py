@@ -69,7 +69,10 @@ ROOT_URLCONF = 'recipe_book.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'recipes' / 'templates',
+            BASE_DIR / 'recipes' / 'templates' / 'recipes',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,6 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
             ],
         },
     },
@@ -131,7 +135,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (User uploaded files)
@@ -144,7 +150,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication settings
-LOGIN_REDIRECT_URL = 'recipe-list'
+LOGIN_REDIRECT_URL = 'recipes:recipe-list'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 

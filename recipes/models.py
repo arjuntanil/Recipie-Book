@@ -60,9 +60,34 @@ class Recipe(models.Model):
     
     def total_time(self):
         return self.preparation_time + self.cooking_time
+        
+    def increment_view_count(self, request):
+        """
+        Increment the view count only if this user/session hasn't viewed this recipe before.
+        Returns True if the view count was incremented, False otherwise.
+        """
+        # Initialize viewed_recipes in session if it doesn't exist
+        if 'viewed_recipes' not in request.session:
+            request.session['viewed_recipes'] = []
+        
+        # Get list of recipes this user has already viewed
+        viewed_recipes = request.session['viewed_recipes']
+        
+        # Only increment view count if this user hasn't viewed this recipe before
+        if str(self.pk) not in viewed_recipes:
+            self.view_count += 1
+            self.save(update_fields=['view_count'])
+            
+            # Add this recipe to user's viewed list
+            viewed_recipes.append(str(self.pk))
+            request.session['viewed_recipes'] = viewed_recipes
+            request.session.modified = True
+            return True
+            
+        return False
 
 class Ingredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='ingredients')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='ingredient_set')
     name = models.CharField(max_length=100)
     quantity = models.CharField(max_length=50)
     unit = models.CharField(max_length=50, blank=True)
@@ -71,10 +96,33 @@ class Ingredient(models.Model):
         return f"{self.quantity} {self.unit} {self.name}"
 
 class RecipeImage(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='images')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipeimage_set')
     image = models.ImageField(upload_to='recipe_images/')
     is_primary = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Image for {self.recipe.name}"
+    
+    def save(self, *args, **kwargs):
+        # If this image is marked as primary, make all other images non-primary
+        if self.is_primary:
+            RecipeImage.objects.filter(recipe=self.recipe).update(is_primary=False)
+        
+        # If no images for this recipe are primary, make this one primary
+        elif not RecipeImage.objects.filter(recipe=self.recipe, is_primary=True).exists():
+            self.is_primary = True
+            
+        super().save(*args, **kwargs)
+
+class SavedRecipe(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_recipes')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='saved_by')
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'recipe')  # Prevent duplicate saves
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.recipe.name}"

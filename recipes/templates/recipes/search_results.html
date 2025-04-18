@@ -1,91 +1,431 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Search Results - Recipe Book{% endblock %}
+
 {% block extra_css %}
 <style>
+    /* Premium Search Header */
     .search-header {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 30px;
+        background: linear-gradient(135deg, #0A1D37 0%, #1a365d 100%);
+        padding: 4rem 0;
+        color: white;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
     }
-    
-    .creator-info {
+
+    .search-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('{% static "images/pattern.png" %}') repeat;
+        opacity: 0.1;
+        animation: moveBackground 20s linear infinite;
+    }
+
+    @keyframes moveBackground {
+        from { background-position: 0 0; }
+        to { background-position: 100% 100%; }
+    }
+
+    .search-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-family: 'Playfair Display', serif;
+        position: relative;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .search-meta {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        font-weight: 300;
+        animation: fadeInUp 0.6s ease-out 0.2s;
+        opacity: 0;
+        animation-fill-mode: forwards;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        animation: slideInLeft 0.6s ease-out;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .filter-title {
+        font-size: 1.4rem;
+        color: #0A1D37;
+        margin-bottom: 1.5rem;
+        font-family: 'Playfair Display', serif;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+
+    .filter-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 2px;
+        background: #C59D5F;
+    }
+
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-label {
+        font-weight: 500;
+        color: #2c3e50;
+        margin-bottom: 0.8rem;
+        font-size: 1rem;
+    }
+
+    .form-select {
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 0.8rem;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: #C59D5F;
+        box-shadow: 0 0 0 2px rgba(197, 157, 95, 0.1);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #C59D5F 0%, #E6B980 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(197, 157, 95, 0.3);
+    }
+
+    /* Recipe Cards */
+    .recipe-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        margin-bottom: 2rem;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .recipe-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .recipe-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        transition: all 0.6s ease;
+    }
+
+    .recipe-card:hover .recipe-image {
+        transform: scale(1.05);
+    }
+
+    .recipe-content {
+        padding: 2rem;
+    }
+
+    .recipe-title {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        font-family: 'Playfair Display', serif;
+        color: #0A1D37;
+        line-height: 1.4;
+    }
+
+    .recipe-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .recipe-title a:hover {
+        color: #C59D5F;
+    }
+
+    .recipe-meta {
         display: flex;
+        gap: 1.5rem;
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 1.2rem;
         align-items: center;
-        margin-top: 10px;
     }
-    
-    .creator-name {
-        font-size: 14px;
-        color: #6c757d;
+
+    .recipe-meta i {
+        color: #C59D5F;
+        margin-right: 0.4rem;
+    }
+
+    .recipe-description {
+        color: #666;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .recipe-tags {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .recipe-tag {
+        background: rgba(197, 157, 95, 0.1);
+        color: #C59D5F;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .recipe-tag:hover {
+        background: #C59D5F;
+        color: white;
+    }
+
+    /* No Results */
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .no-results i {
+        font-size: 4rem;
+        color: #C59D5F;
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    .no-results h3 {
+        color: #0A1D37;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .no-results p {
+        color: #666;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .no-results .btn-primary {
+        background: linear-gradient(135deg, #C59D5F 0%, #E6B980 100%);
+        border: none;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .no-results .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(197, 157, 95, 0.3);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @media (max-width: 768px) {
+        .search-header {
+            padding: 3rem 0;
+        }
+
+        .search-title {
+            font-size: 2rem;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .recipe-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .recipe-image {
+            height: 200px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="search-header">
-        <h1 class="mb-3">Search Results</h1>
-        <p class="lead">
+<div class="search-header">
+    <div class="container">
+        <h1 class="search-title">Search Results</h1>
+        <div class="search-meta">
             {% if query %}
-            Found {{ recipes|length }} result{{ recipes|length|pluralize }} for "{{ query }}"
-            {% else %}
-            All recipes
-            {% endif %}
-        </p>
-        <form method="get" action="{% url 'recipe-search' %}" class="d-flex">
-            <input class="form-control me-2" type="search" placeholder="Search recipes" name="q" value="{{ query }}">
-            <button class="btn btn-primary" type="submit">Search</button>
-        </form>
-    </div>
-
-    <div class="row">
-        {% for recipe in recipes %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                {% if recipe.images.first %}
-                <img src="{{ recipe.images.first.image.url }}" class="card-img-top" alt="{{ recipe.name }}" style="height: 200px; object-fit: cover;">
+                {% if recipes.count == 1 %}
+                    1 recipe found for "{{ query }}"
                 {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="fas fa-utensils fa-3x text-muted"></i>
-                </div>
+                    {{ recipes.count }} recipes found for "{{ query }}"
                 {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ recipe.name }}</h5>
-                    <p class="card-text text-muted">
-                        <small>
-                            <i class="fas fa-clock"></i> {{ recipe.total_time }} min
-                            <i class="fas fa-utensils ms-2"></i> {{ recipe.get_difficulty_display }}
-                            <i class="fas fa-users ms-2"></i> {{ recipe.servings }} servings
-                        </small>
-                    </p>
-                    <p class="card-text">{{ recipe.description|truncatewords:20 }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Filters Column -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-section">
+                <h3 class="filter-title">Refine Results</h3>
+                <form method="GET" action="{% url 'recipes:search' %}">
+                    <input type="hidden" name="q" value="{{ query }}">
                     
-                    <!-- Creator Information -->
-                    <div class="creator-info">
-                        {% if recipe.user.profile.profile_picture %}
-                            <img src="{{ recipe.user.profile.profile_picture.url }}" alt="{{ recipe.user.username }}" class="avatar avatar-sm me-2">
-                        {% else %}
-                            <div class="avatar-placeholder avatar-sm me-2">
-                                <i class="fas fa-user fa-xs text-secondary"></i>
-                            </div>
-                        {% endif %}
-                        <span class="creator-name">{{ recipe.user.username }}</span>
+                    <div class="filter-group">
+                        <label class="filter-label">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.0 }}" {% if selected_category == category.0 %}selected{% endif %}>
+                                {{ category.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <a href="{% url 'recipe-detail' recipe.pk %}" class="btn btn-outline-primary btn-sm">View Recipe</a>
-                </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Difficulty</label>
+                        <select name="difficulty" class="form-select">
+                            <option value="">All Difficulties</option>
+                            {% for difficulty in difficulties %}
+                            <option value="{{ difficulty.0 }}" {% if selected_difficulty == difficulty.0 %}selected{% endif %}>
+                                {{ difficulty.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-filter">Apply Filters</button>
+                </form>
             </div>
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                No recipes found matching "{{ query }}". Try a different search term.
-            </div>
+
+        <!-- Results Column -->
+        <div class="col-lg-9">
+            {% if recipes %}
+                <div class="row">
+                    {% for recipe in recipes %}
+                    <div class="col-md-6 mb-4">
+                        <div class="recipe-card">
+                            <a href="{% url 'recipes:recipe-detail' recipe.pk %}" class="recipe-image-link">
+                                {% if recipe.recipeimage_set.first %}
+                                <img src="{{ recipe.recipeimage_set.first.image.url }}" alt="{{ recipe.name }}" class="recipe-image">
+                                {% else %}
+                                <img src="{% static 'images/default-recipe.jpg' %}" alt="{{ recipe.name }}" class="recipe-image">
+                                {% endif %}
+                            </a>
+                            <div class="recipe-content">
+                                <h2 class="recipe-title">
+                                    <a href="{% url 'recipes:recipe-detail' recipe.pk %}">
+                                        {{ recipe.name }}
+                                    </a>
+                                </h2>
+                                <div class="recipe-meta">
+                                    <span><i class="fas fa-signal"></i> {{ recipe.get_difficulty_display }}</span>
+                                    <span><i class="fas fa-user"></i> {{ recipe.user.username }}</span>
+                                </div>
+                                {% if recipe.description %}
+                                <p class="recipe-description">{{ recipe.description }}</p>
+                                {% endif %}
+                                <div class="recipe-tags">
+                                    <span class="recipe-tag">{{ recipe.get_category_display }}</span>
+                                    {% if recipe.ingredient_set.all %}
+                                    <span class="recipe-tag">{{ recipe.ingredient_set.count }} ingredients</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No recipes found</h3>
+                    <p>Try adjusting your search terms or filters to find what you're looking for.</p>
+                    <a href="{% url 'recipes:recipe-list' %}" class="btn btn-primary">Browse All Recipes</a>
+                </div>
+            {% endif %}
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %} 

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load socialaccount %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .password-field-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 0;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+    }
+
+    .password-toggle:hover {
+        background-color: rgba(100, 116, 139, 0.1);
+        color: #475569;
+    }
+
+    .password-toggle i {
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .password-toggle.active i {
+        transform: scale(1.1);
+        color: #2b4d6f;
+    }
+
+    .password-toggle:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(43, 77, 111, 0.2);
+    }
+
+    @keyframes eyeWiggle {
+        0%, 100% { transform: translateY(-50%) rotate(0deg); }
+        25% { transform: translateY(-50%) rotate(-10deg); }
+        75% { transform: translateY(-50%) rotate(10deg); }
+    }
+
+    .password-toggle:hover i {
+        animation: eyeWiggle 0.5s ease;
+    }
+
+    .form-control[type="password"] {
+        padding-right: 45px;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Create Account</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary btn-block mt-4">Register</button>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <p>Already have an account? <a href="{% url 'recipes:login' %}">Login here</a></p>
+                        <p>OR</p>
+                        
+                        <a href="{% url 'recipes:google-signin' %}" class="btn btn-outline-dark">
+                            <i class="fab fa-google me-2"></i>Sign up with Google
+                        </a>
+                        
+                        <div class="mt-3 small text-muted">
+                            <a href="{% url 'recipes:setup-google-oauth' %}">Need help setting up Google login?</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Password Toggle Functionality
+document.querySelectorAll('.password-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+        const passwordField = this.previousElementSibling;
+        const icon = this.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            this.classList.add('active');
+        } else {
+            passwordField.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            this.classList.remove('active');
+        }
+        
+        // Add focus to password field
+        passwordField.focus();
+    });
+});
+
+// Add required attribute to password fields
+document.querySelectorAll('input[type="password"]').forEach(input => {
+    input.setAttribute('required', '');
+    input.classList.add('form-control');
+});
+</script>
+{% endblock %} 

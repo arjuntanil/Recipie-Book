@@ -18,12 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from recipes.views import HomeView
 
 # Customize admin interface
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.site_title = settings.ADMIN_SITE_TITLE
 admin.site.index_title = settings.ADMIN_INDEX_TITLE
+admin.site.login_template = 'admin/login.html'
 
 urlpatterns = [
     # Include allauth URLs first for proper routing
@@ -32,7 +33,7 @@ urlpatterns = [
     # Admin and app URLs
     path('admin/', admin.site.urls),
     path('recipes/', include('recipes.urls')),
-    path('', RedirectView.as_view(url='recipes/', permanent=True)),
+    path('', HomeView.as_view(), name='home'),
 ]
 
 if settings.DEBUG:

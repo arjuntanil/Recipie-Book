@@ -1,7 +1,16 @@
 from django import template
 from django.utils.html import format_html
+import re
 
 register = template.Library()
+
+@register.filter
+def get_item(dictionary, key):
+    """
+    Get an item from a dictionary using bracket notation.
+    Usage: {{ mydict|get_item:item_key }}
+    """
+    return dictionary.get(key, 0)
 
 @register.filter
 def format_time(minutes):
@@ -93,4 +102,40 @@ def percentage(value, max_value=100):
         percentage = (float(value) / float(max_value)) * 100
         return f"{min(percentage, 100)}%"
     except (ValueError, TypeError):
-        return "0%" 
+        return "0%"
+
+@register.filter
+def split_steps(value):
+    """Split recipe steps by line breaks and filter out empty lines"""
+    if value:
+        return [step for step in value.splitlines() if step.strip()]
+    return []
+
+@register.simple_tag
+def has_viewed_recipe(request, recipe_id):
+    """Check if the current user/session has already viewed this recipe"""
+    if not request or not recipe_id:
+        return False
+        
+    viewed_recipes = request.session.get('viewed_recipes', [])
+    return str(recipe_id) in viewed_recipes 
+
+@register.filter
+def split(value, arg):
+    """
+    Splits the value on the argument and returns a list.
+    
+    Usage: {{ value|split:"delimiter" }}
+    Example: {{ "a,b,c"|split:"," }} -> ["a", "b", "c"]
+    """
+    return value.split(arg)
+
+@register.filter
+def strip(value):
+    """
+    Strips leading and trailing whitespace from a string.
+    
+    Usage: {{ value|strip }}
+    Example: {{ "  text  "|strip }} -> "text"
+    """
+    return str(value).strip() 
