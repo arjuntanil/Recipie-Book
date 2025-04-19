@@ -365,7 +365,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Difficulty</label>
                         <select name="difficulty" class="form-select">
-                            <option value="">All Difficulties</option>
+                            <option value="">Select Difficulty Level</option>
                             {% for difficulty in difficulties %}
                             <option value="{{ difficulty.0 }}" {% if selected_difficulty == difficulty.0 %}selected{% endif %}>
                                 {{ difficulty.1 }}

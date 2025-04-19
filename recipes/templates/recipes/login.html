@@ -272,6 +272,43 @@
             font-size: 1.5rem;
         }
     }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+        opacity: 0;
+        transform: translateY(-10px);
+        animation: fadeInDown 0.3s forwards;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert-danger {
+        background-color: #fff5f5;
+        color: #dc3545;
+        border: 1px solid #ffebeb;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -301,6 +338,12 @@
 
         <form method="post">
             {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.non_field_errors|join:", " }}
+            </div>
+            {% endif %}
             <div class="form-group">
                 <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
                 {{ form.username }}

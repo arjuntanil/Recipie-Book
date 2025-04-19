@@ -168,17 +168,9 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': [
             'profile',
             'email',
-            'openid',
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-            'prompt': 'select_account',  # Force account selection even if already logged in
-        },
-        # Attempt more permissive OAuth flow configuration
-        'APP': {
-            'client_id': None,  # This will be populated from the database
-            'secret': None,     # This will be populated from the database
-            'key': ''           # Not used for Google
         }
     }
 }
@@ -186,12 +178,11 @@ SOCIALACCOUNT_PROVIDERS = {
 # Additional allauth settings
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # 'mandatory', 'optional', or 'none'
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Can authenticate with either username or email
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # Social account settings
-SOCIALACCOUNT_AUTO_SIGNUP = True  # Auto-signup for social accounts
 SOCIALACCOUNT_EMAIL_REQUIRED = False
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_QUERY_EMAIL = True
@@ -204,3 +195,9 @@ SOCIALACCOUNT_PROVIDERS_CACHE_TIMEOUT = 0
 ADMIN_SITE_HEADER = "Recipe Book Admin"
 ADMIN_SITE_TITLE = "Recipe Book Admin Portal"
 ADMIN_INDEX_TITLE = "Welcome to Recipe Book Admin"
+
+# CSRF Settings for local development
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+]
