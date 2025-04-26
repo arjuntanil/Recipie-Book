@@ -187,7 +187,7 @@ urllib3==2.1.0
 
 1. **Clone the Repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/arjuntanil/Recipie-Book.git
    cd recipe-book
    ```
 
