@@ -1,26 +1,35 @@
+from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.socialaccount.models import SocialApp
-from django.core.exceptions import MultipleObjectsReturned
+from allauth.account.utils import user_email
+from allauth.utils import get_user_model
+from django.conf import settings
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    """
-    Custom adapter to handle potential duplicate SocialApp entries
-    """
-    
-    def get_app(self, request, provider, client_id=None):
+    def pre_social_login(self, request, sociallogin):
         """
-        Override to handle potential duplicate SocialApp entries
+        Handle cases where a user's email already exists.
+        If a user with this email exists, connect the social account to it.
         """
-        try:
-            # Try the standard way first
-            return super().get_app(request, provider, client_id=client_id)
-        except MultipleObjectsReturned:
-            # If we get multiple objects, use the first one
-            app_query = SocialApp.objects.filter(provider=provider)
-            if client_id:
-                app_query = app_query.filter(client_id=client_id)
-            app = app_query.first()
-            if app:
-                return app
-            # If no app is found, let the original exception propagate
-            raise 
+        # Get the email from the social account
+        email = sociallogin.account.extra_data.get('email')
+        if email:
+            # Check if any user exists with this email
+            User = get_user_model()
+            try:
+                user = User.objects.get(email=email)
+                # If we found a user, connect the social account to it
+                if not sociallogin.is_existing:
+                    sociallogin.connect(request, user)
+            except User.DoesNotExist:
+                pass
+        
+        return super().pre_social_login(request, sociallogin)
+
+    def populate_user(self, request, sociallogin, data):
+        """
+        Populate user information from social login.
+        """
+        user = super().populate_user(request, sociallogin, data)
+        if not user.email:
+            user.email = data.get('email', '')
+        return user 

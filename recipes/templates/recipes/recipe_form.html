@@ -312,141 +312,117 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Add error class to inputs with errors
-    $('.is-invalid').closest('.form-group').addClass('has-error');
-    
-    // Fix any issues with the hidden fields in the formsets
-    function ensureFormsetFields() {
-        // Make sure the TOTAL_FORMS and INITIAL_FORMS are present with values
-        if ($('#id_ingredients-TOTAL_FORMS').length === 0) {
-            // If missing, create them with default values
-            const ingredientFormCount = $('.ingredient-form').length;
-            const initialIngredientCount = $('.ingredient-form').filter(function() {
-                return $(this).find('.delete-row').length > 0;
-            }).length;
-            
-            $('#ingredient-formset').prepend(`
-                <input type="hidden" name="ingredients-TOTAL_FORMS" value="${ingredientFormCount}" id="id_ingredients-TOTAL_FORMS">
-                <input type="hidden" name="ingredients-INITIAL_FORMS" value="${initialIngredientCount}" id="id_ingredients-INITIAL_FORMS">
-                <input type="hidden" name="ingredients-MIN_NUM_FORMS" value="1" id="id_ingredients-MIN_NUM_FORMS">
-                <input type="hidden" name="ingredients-MAX_NUM_FORMS" value="50" id="id_ingredients-MAX_NUM_FORMS">
-            `);
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize formset counters
+    let ingredientFormCount = $('.ingredient-form').length;
+    let imageFormCount = $('.image-form').length;
+
+    // Add Ingredient button click handler
+    document.getElementById('add-ingredient').addEventListener('click', function() {
+        let form_idx = ingredientFormCount;
+        let template = document.querySelector('.ingredient-form');
+        let newForm = template.cloneNode(true);
         
-        if ($('#id_recipeimage_set-TOTAL_FORMS').length === 0) {
-            // If missing, create them with default values
-            const imageFormCount = $('.image-form').length;
-            const initialImageCount = $('.image-form').filter(function() {
-                return $(this).find('.image-preview').length > 0;
-            }).length;
-            
-            $('#image-formset').prepend(`
-                <input type="hidden" name="recipeimage_set-TOTAL_FORMS" value="${imageFormCount}" id="id_recipeimage_set-TOTAL_FORMS">
-                <input type="hidden" name="recipeimage_set-INITIAL_FORMS" value="${initialImageCount}" id="id_recipeimage_set-INITIAL_FORMS">
-                <input type="hidden" name="recipeimage_set-MIN_NUM_FORMS" value="0" id="id_recipeimage_set-MIN_NUM_FORMS">
-                <input type="hidden" name="recipeimage_set-MAX_NUM_FORMS" value="10" id="id_recipeimage_set-MAX_NUM_FORMS">
-            `);
-        }
-    }
-    
-    // Run on page load
-    ensureFormsetFields();
-    
-    // Clone formset template and update attributes for ingredients
-    $('#add-ingredient').click(function() {
-        let form_idx = parseInt($('#id_ingredients-TOTAL_FORMS').val());
-        let newForm = $('.ingredient-form:first').clone(true);
-        
-        // Clear existing values and errors
-        newForm.find('input').val('');
-        newForm.find('.invalid-feedback').remove();
-        newForm.find('.has-error').removeClass('has-error');
-        
-        // Update form indexes
-        newForm.find('input, select, textarea').each(function() {
-            let name = $(this).attr('name');
-            if (name) {
-                name = name.replace(/ingredients-\d+-/, `ingredients-${form_idx}-`);
-                $(this).attr('name', name);
-                $(this).attr('id', `id_${name}`);
-            }
+        // Clear values
+        newForm.querySelectorAll('input[type="text"]').forEach(input => {
+            input.value = '';
         });
         
-        newForm.find('label').each(function() {
-            let newFor = $(this).attr('for');
-            if (newFor) {
-                newFor = newFor.replace(/ingredients-\d+-/, `ingredients-${form_idx}-`);
-                $(this).attr('for', newFor);
-            }
+        // Update form index
+        newForm.innerHTML = newForm.innerHTML.replaceAll(
+            /ingredients-\d+/g,
+            `ingredients-${form_idx}`
+        );
+        
+        // Update IDs
+        newForm.querySelectorAll('[id*="ingredients-"]').forEach(element => {
+            element.id = element.id.replace(/ingredients-\d+/, `ingredients-${form_idx}`);
         });
         
-        // Remove any existing delete row
-        newForm.find('.delete-row').remove();
+        // Update labels
+        newForm.querySelectorAll('label[for*="ingredients-"]').forEach(label => {
+            label.setAttribute('for', label.getAttribute('for').replace(/ingredients-\d+/, `ingredients-${form_idx}`));
+        });
         
-        $('#ingredient-formset').append(newForm);
-        $('#id_ingredients-TOTAL_FORMS').val(form_idx + 1);
+        // Remove any delete checkbox if it exists
+        const deleteRow = newForm.querySelector('.delete-row');
+        if (deleteRow) {
+            deleteRow.remove();
+        }
+        
+        // Add the new form
+        document.getElementById('ingredient-formset').appendChild(newForm);
+        
+        // Update total forms count
+        ingredientFormCount++;
+        document.getElementById('id_ingredients-TOTAL_FORMS').value = ingredientFormCount;
     });
-    
-    // Clone formset template and update attributes for images
-    $('#add-image').click(function() {
-        let form_idx = parseInt($('#id_recipeimage_set-TOTAL_FORMS').val());
-        let newForm = $('.image-form:first').clone(true);
+
+    // Add Image button click handler
+    document.getElementById('add-image').addEventListener('click', function() {
+        let form_idx = imageFormCount;
+        let template = document.querySelector('.image-form');
+        let newForm = template.cloneNode(true);
         
         // Clear existing images and values
-        newForm.find('.image-preview').remove();
-        newForm.find('.mt-2.mb-3').remove(); // Remove the "Current image" text
-        newForm.find('input:not([type="hidden"])').val('');
-        newForm.find('input[type="checkbox"]').prop('checked', false);
-        
-        // Update form indexes
-        newForm.find('input, select, textarea').each(function() {
-            let name = $(this).attr('name');
-            if (name) {
-                name = name.replace(/recipeimage_set-0-/, `recipeimage_set-${form_idx}-`);
-                $(this).attr('name', name);
-                $(this).attr('id', `id_${name}`);
+        newForm.querySelectorAll('.image-preview, .mt-2.mb-3').forEach(el => el.remove());
+        newForm.querySelectorAll('input:not([type="hidden"])').forEach(input => {
+            if (input.type === 'file') {
+                input.value = '';
+            } else if (input.type === 'checkbox') {
+                input.checked = false;
             }
         });
         
-        newForm.find('label').each(function() {
-            let newFor = $(this).attr('for');
-            if (newFor) {
-                newFor = newFor.replace(/recipeimage_set-0-/, `recipeimage_set-${form_idx}-`);
-                $(this).attr('for', newFor);
-            }
+        // Update form index
+        newForm.innerHTML = newForm.innerHTML.replaceAll(
+            /recipeimage_set-\d+/g,
+            `recipeimage_set-${form_idx}`
+        );
+        
+        // Update IDs
+        newForm.querySelectorAll('[id*="recipeimage_set-"]').forEach(element => {
+            element.id = element.id.replace(/recipeimage_set-\d+/, `recipeimage_set-${form_idx}`);
         });
         
-        // Remove any existing delete row
-        newForm.find('.delete-row').remove();
+        // Update labels
+        newForm.querySelectorAll('label[for*="recipeimage_set-"]').forEach(label => {
+            label.setAttribute('for', label.getAttribute('for').replace(/recipeimage_set-\d+/, `recipeimage_set-${form_idx}`));
+        });
         
-        // Make sure we have the right label
-        newForm.find('label[for$="image"]').text('Upload Image');
-        newForm.find('.small.text-muted.mb-2').remove();
+        // Add the new form
+        document.getElementById('image-formset').appendChild(newForm);
         
-        $('#image-formset').append(newForm);
-        $('#id_recipeimage_set-TOTAL_FORMS').val(form_idx + 1);
+        // Update total forms count
+        imageFormCount++;
+        document.getElementById('id_recipeimage_set-TOTAL_FORMS').value = imageFormCount;
     });
 
-    // File input preview (show image name when selected)
-    $('input[type="file"]').on('change', function() {
-        let fileName = $(this).val().split('\\').pop();
-        if (fileName) {
-            $(this).next('.custom-file-label').text(fileName);
-        }
+    // Handle file input changes
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            let fileName = this.value.split('\\').pop();
+            if (fileName) {
+                let label = this.nextElementSibling;
+                if (label && label.classList.contains('custom-file-label')) {
+                    label.textContent = fileName;
+                }
+            }
+        });
     });
 
-    // Mark recipe image as deleted when delete checkbox is checked
-    $('.delete-checkbox').on('change', function() {
-        const formItem = $(this).closest('.formset-item');
-        if (this.checked) {
-            formItem.addClass('to-be-deleted');
-            formItem.find('.image-preview img').css('opacity', '0.3');
-        } else {
-            formItem.removeClass('to-be-deleted');
-            formItem.find('.image-preview img').css('opacity', '1');
-        }
+    // Handle delete checkboxes
+    document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            let formItem = this.closest('.formset-item');
+            if (this.checked) {
+                formItem.classList.add('to-be-deleted');
+            } else {
+                formItem.classList.remove('to-be-deleted');
+            }
+        });
     });
 });
 </script>

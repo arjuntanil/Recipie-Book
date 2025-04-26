@@ -973,11 +973,11 @@
                 </button>
                 {% if user.is_authenticated %}
                     {% if is_saved %}
-                        <button class="btn-save active" onclick="unsaveRecipe({{ recipe.id }})" aria-label="Unsave recipe">
+                        <button class="btn-save active" onclick="toggleSave(this)" data-recipe-id="{{ recipe.id }}" aria-label="Unsave recipe">
                             <i class="fas fa-bookmark"></i>
                         </button>
                     {% else %}
-                        <button class="btn-save" onclick="saveRecipe({{ recipe.id }})" aria-label="Save recipe">
+                        <button class="btn-save" onclick="toggleSave(this)" data-recipe-id="{{ recipe.id }}" aria-label="Save recipe">
                             <i class="far fa-bookmark"></i>
                         </button>
                     {% endif %}
@@ -1132,13 +1132,12 @@
     async function toggleSave(button) {
         const recipeId = button.dataset.recipeId;
         const icon = button.querySelector('i');
-        const span = button.querySelector('span');
         
         try {
             const response = await fetch(`/recipes/toggle-save/${recipeId}/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-CSRFToken': getCookie('csrftoken'),
                     'Content-Type': 'application/json',
                 },
                 credentials: 'same-origin'
@@ -1158,15 +1157,13 @@
             
             // Update button state with animation
             if (data.is_saved) {
-                button.classList.add('saved');
+                button.classList.add('saved', 'active');
                 icon.classList.remove('far', 'fa-bookmark');
                 icon.classList.add('fas', 'fa-bookmark', 'save-animation');
-                span.textContent = 'Saved';
             } else {
-                button.classList.remove('saved');
+                button.classList.remove('saved', 'active');
                 icon.classList.remove('fas', 'fa-bookmark');
                 icon.classList.add('far', 'fa-bookmark', 'unsave-animation');
-                span.textContent = 'Save Recipe';
             }
 
             // Show feedback toast
